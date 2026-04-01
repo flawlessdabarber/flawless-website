@@ -21,12 +21,4 @@ export default defineConfig(({mode}) => {
       hmr: process.env.DISABLE_HMR !== 'true',
     },
   };
-});import { defineConfig } from 'vite'
-
-export default defineConfig({
-  base: '/',
-  build: {
-    chunkSizeWarningLimit: 1000
-  }
-})
-
+});
