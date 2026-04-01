@@ -1,0 +1,9 @@
+{
+  "name": "Flawless Da Barber",
+  "description": "Premium barbershop experience with AI-powered concierge, mobile services, and exclusive memberships.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone",
+    "geolocation"
+  ]
+}

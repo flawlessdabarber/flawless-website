@@ -1,0 +1,86 @@
+{
+  "entities": {
+    "users": {
+      "title": "User Profile",
+      "description": "User profile information including role and preferences.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "role": { "type": "string", "enum": ["admin", "barber", "client"] },
+        "membershipType": { "type": "string", "enum": ["none", "kids", "adults", "corporate", "investment"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email", "role"]
+    },
+    "appointments": {
+      "title": "Appointment",
+      "description": "Booking details for hair or skin services.",
+      "type": "object",
+      "properties": {
+        "clientId": { "type": "string" },
+        "barberId": { "type": "string" },
+        "serviceId": { "type": "string" },
+        "date": { "type": "string", "format": "date-time" },
+        "status": { "type": "string", "enum": ["pending", "confirmed", "completed", "cancelled"] },
+        "type": { "type": "string", "enum": ["in-store", "mobile"] },
+        "location": { "type": "string" }
+      },
+      "required": ["clientId", "serviceId", "date", "status", "type"]
+    },
+    "merchandise": {
+      "title": "Product",
+      "description": "Items available for sale in the shop.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "price": { "type": "number" },
+        "category": { "type": "string" },
+        "stock": { "type": "number" },
+        "imageUrl": { "type": "string" }
+      },
+      "required": ["name", "price", "category"]
+    },
+    "cart": {
+      "title": "Cart",
+      "description": "User's shopping cart items.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "productId": { "type": "string" },
+              "quantity": { "type": "number" }
+            }
+          }
+        }
+      },
+      "required": ["userId", "items"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "users",
+      "description": "User profiles and roles."
+    },
+    "/appointments/{appointmentId}": {
+      "schema": "appointments",
+      "description": "Service bookings."
+    },
+    "/merchandise/{productId}": {
+      "schema": "merchandise",
+      "description": "Shop products."
+    },
+    "/carts/{userId}": {
+      "schema": "cart",
+      "description": "User shopping carts."
+    }
+  }
+}
