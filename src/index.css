@@ -41,6 +41,11 @@
   50% { transform: translateY(-10px); }
 }
 
+@keyframes bounce-x {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(25%); }
+}
+
 .animate-float {
   animation: float 3s ease-in-out infinite;
 }

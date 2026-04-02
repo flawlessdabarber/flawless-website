@@ -19,13 +19,16 @@ export default function CommunityBanner() {
       <div className="absolute inset-0 z-10 bg-gradient-to-r from-black via-black/80 to-black" />
 
       {/* Content */}
-      <div className="relative z-20 flex flex-col md:flex-row items-center justify-center gap-4 text-white px-6 text-center">
-        <h3 className="text-xl md:text-3xl font-bold uppercase tracking-widest">
-          Come join our community on WhatsApp <span className="text-brand-green">F-Life</span>
+      <div className="relative z-20 flex items-center justify-center text-white px-6 text-center">
+        <h3 className="text-5xl md:text-7xl font-bold uppercase tracking-tighter leading-none flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
+          <span>Join us on WhatsApp</span>
+          <span className="text-brand-green flex items-center gap-4">
+            F-Life
+            <div className="w-10 h-10 md:w-14 md:h-14 rounded-full bg-brand-green text-black flex items-center justify-center shrink-0 animate-[bounce-x_1s_infinite]">
+              <ArrowRight className="w-5 h-5 md:w-8 md:h-8" />
+            </div>
+          </span>
         </h3>
-        <div className="w-10 h-10 rounded-full bg-brand-green text-black flex items-center justify-center group-hover:scale-110 transition-transform">
-          <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
-        </div>
       </div>
     </a>
   );

@@ -74,19 +74,19 @@ export default function Podcast() {
             className="text-center lg:text-left"
           >
             <span className="text-brand-green font-mono text-xs tracking-widest uppercase mb-4 block">YouTube Channel</span>
-            <h2 className="text-5xl md:text-7xl font-bold uppercase tracking-tighter mb-4">FDB <br /> Live</h2>
+            <h2 className="text-5xl md:text-7xl font-bold uppercase tracking-tighter leading-none mb-4">FDB <br /> Live</h2>
             
             <div className="font-bold uppercase tracking-widest text-sm mb-6">
               <span className="text-gray-400">Showtimes</span>{' '}
-              <span className={nextDay === 0 ? "text-brand-green animate-pulse drop-shadow-[0_0_15px_rgba(0,255,0,1)] brightness-150" : "text-brand-green"}>Sun</span> <span className="text-brand-green">|</span>{' '}
-              <span className={nextDay === 2 ? "text-brand-green animate-pulse drop-shadow-[0_0_15px_rgba(0,255,0,1)] brightness-150" : "text-brand-green"}>Tue</span> <span className="text-brand-green">|</span>{' '}
-              <span className={nextDay === 4 ? "text-brand-green animate-pulse drop-shadow-[0_0_15px_rgba(0,255,0,1)] brightness-150" : "text-brand-green"}>Thurs</span> <span className="text-brand-green">|</span>{' '}
-              <span className="text-gray-400">Live 6pm EST.</span>
+              <span className={nextDay === 0 ? "text-brand-green animate-pulse drop-shadow-[0_0_20px_rgba(0,255,0,0.8)] brightness-150" : "text-gray-600"}>Sun</span> <span className="text-gray-600">|</span>{' '}
+              <span className={nextDay === 2 ? "text-brand-green animate-pulse drop-shadow-[0_0_20px_rgba(0,255,0,0.8)] brightness-150" : "text-gray-600"}>Tue</span> <span className="text-gray-600">|</span>{' '}
+              <span className={nextDay === 4 ? "text-brand-green animate-pulse drop-shadow-[0_0_20px_rgba(0,255,0,0.8)] brightness-150" : "text-gray-600"}>Thurs</span> <span className="text-gray-600">|</span>{' '}
+              <span className="text-white">Live 6pm EST.</span>
             </div>
             
             <div className="mb-8">
               <p className="text-[10px] uppercase tracking-widest text-gray-400 mb-1">Upcoming Show In</p>
-              <p className="text-3xl font-mono font-bold text-gray-400">{timeLeft || "Loading..."}</p>
+              <p className="text-3xl font-mono font-bold text-brand-green">{timeLeft || "Loading..."}</p>
             </div>
 
             <p className="text-white/60 mb-8 text-lg leading-relaxed max-w-2xl mx-auto lg:mx-0">
