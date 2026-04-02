@@ -51,8 +51,8 @@ export default function BodyOfWork() {
   return (
     <section id="body-of-work" className="py-24 bg-black overflow-hidden relative">
       <div className="container mx-auto px-6 mb-16">
-        <div className="flex flex-col items-center gap-8 mb-8">
-          <div className="text-center">
+        <div className="flex flex-col items-center md:items-start gap-8 mb-8">
+          <div className="text-center md:text-left">
             <span className="text-brand-green font-mono text-xs tracking-widest uppercase mb-4 block">The Portfolio</span>
             <h2 className="text-5xl md:text-7xl font-bold uppercase tracking-tighter leading-none">Body of <br /> Work</h2>
           </div>

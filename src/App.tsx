@@ -6,6 +6,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
+import CommunityBanner from './components/CommunityBanner';
 import AIAgent from './components/AIAgent';
 import Home from './pages/Home';
 import Login from './pages/Login';
@@ -37,6 +38,7 @@ export default function App() {
                 <Route path="/podcast" element={<Home />} />
                 <Route path="/events" element={<Home />} />
               </Routes>
+              <CommunityBanner />
               <Footer />
               <AIAgent />
             </div>
