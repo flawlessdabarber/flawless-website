@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react';
 import { GoogleGenAI, Modality } from "@google/genai";
 import { useBooking } from './BookingContext';
+import { useCart } from './CartContext';
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
@@ -46,6 +47,7 @@ const AIContext = createContext<AIContextType | undefined>(undefined);
 
 export function AIProvider({ children }: { children: ReactNode }) {
   const { state: bookingState, totalPrice } = useBooking();
+  const { items: cartItems, totalPrice: cartTotal } = useCart();
   const [isAIActive, setIsAIActive] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     { role: 'ai', text: 'Welcome to Flawless Da Barber. I am your AI Concierge. How can I assist you with booking, memberships, or our premium products today?' }
@@ -129,6 +131,10 @@ export function AIProvider({ children }: { children: ReactNode }) {
         ? bookingState.selectedServices.map(s => s.title).join(', ') 
         : 'None selected yet';
       
+      const cartText = cartItems.length > 0 
+        ? cartItems.map(item => `${item.quantity}x ${item.name} (${item.size || 'N/A'}, ${item.color || 'N/A'})`).join(', ')
+        : 'Empty';
+
       const siteContext = `
         User's Current Selections:
         - Services: ${selectedServicesText}
@@ -143,6 +149,8 @@ export function AIProvider({ children }: { children: ReactNode }) {
         - Selected Membership: ${selectedMembership || 'None'}
         - Selected Podcast: ${selectedPodcast || 'None'}
         - Selected Work: ${selectedWork || 'None'}
+        - Cart Items: ${cartText}
+        - Cart Total: $${cartTotal}
       `;
 
       const response = await ai.models.generateContent({
@@ -151,11 +159,12 @@ export function AIProvider({ children }: { children: ReactNode }) {
         config: {
           systemInstruction: `You are the Flawless Da Barber AI Concierge. 
           You are synced with all sections of the website:
-          - BOOKING: Help clients book hair/skin services (In-Store, Mobile Visit, Walk-in/Member). Explain pricing (Overtime, Sunday fees).
+          - BOOKING: Help clients book hair/skin services (In-Store, Mobile Visit, Walk-in/Member). Explain pricing (Overtime, Sunday fees). Note: Hair Cuts, High Profile Clientele, Urban Style, and Hair Style are mutually exclusive base services.
           - EVENTS: Provide info on upcoming events like the Grooming Workshop or Summer Bash.
           - PODCAST: Talk about "FDB Live" and the YouTube Channel.
           - MEMBERSHIPS: Explain monthly plans (Kids, Adults, Corporate, Investment).
           - MERCHANDISE: Help with premium goods like Pomade, Elixir, or Tees.
+          - CART: You are aware of the user's cart contents. If there are items in the cart, you can remind the user to checkout or ask if they need anything else.
           - BODY OF WORK: Explain our portfolio of precision fades, textured crops, and modern pompadours.
           - CALL TRANSFER: If a user asks to speak to a human or "transfer a call", simulate the transfer by saying "Connecting you to a live barber now..."
           

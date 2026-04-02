@@ -21,7 +21,7 @@ export default function Membership() {
       return base * routine;
     }
     if (tierName === 'Corporate') {
-      return 500;
+      return 500 * routine;
     }
     if (tierName === 'Investment') {
       return 10000 * routine;
@@ -58,10 +58,11 @@ export default function Membership() {
 
   return (
     <section id="membership" className="py-24 bg-black relative">
-      <div className="container mx-auto px-6 mb-12 text-center relative z-10">
-        <span className="text-brand-green font-mono text-xs tracking-widest uppercase mb-4 block">Exclusive Access</span>
-        <h2 className="text-5xl md:text-7xl font-bold uppercase tracking-tighter mb-6">Join The <br /> Inner Circle</h2>
-        <p className="text-white/60 max-w-2xl mx-auto mb-12">Elevate your lifestyle with our tiered membership programs designed for the modern individual and forward-thinking corporations.</p>
+      <div className="container mx-auto px-6 mb-12 relative z-10">
+        <div className="text-center md:text-left mb-12">
+          <span className="text-brand-green font-mono text-xs tracking-widest uppercase mb-4 block">Exclusive Membership</span>
+          <h2 className="text-5xl md:text-7xl font-bold uppercase tracking-tighter mb-6">Lock In Your <br /> Routine</h2>
+        </div>
 
         {/* Selectors */}
         <div className="flex flex-col md:flex-row items-center justify-center gap-12 glass p-8 rounded-3xl border-white/5 max-w-4xl mx-auto">
@@ -109,6 +110,8 @@ export default function Membership() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {tiers.map((tier, i) => {
             const price = getPrice(tier.name);
+            const isRestricted = serviceType === 'urban' && (tier.name === 'Corporate' || tier.name === 'Investment');
+            
             return (
               <motion.div
                 key={tier.name}
@@ -116,8 +119,14 @@ export default function Membership() {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.1 }}
                 whileHover={{ y: -10 }}
-                className="glass p-8 rounded-3xl flex flex-col border-white/5 hover:border-brand-green/30 transition-all bg-brand-gray/10 backdrop-blur-xl shadow-2xl shadow-black/50 relative overflow-hidden group"
+                className={cn(
+                  "glass p-8 rounded-3xl flex flex-col border-white/5 transition-all bg-brand-gray/10 backdrop-blur-xl shadow-2xl shadow-black/50 relative overflow-hidden group",
+                  isRestricted ? "border-red-500/30" : "hover:border-brand-green/30"
+                )}
               >
+                {isRestricted && (
+                  <div className="absolute inset-0 bg-red-950/60 z-10 pointer-events-none" />
+                )}
                 <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity">
                   <tier.icon size={80} />
                 </div>
@@ -144,10 +153,16 @@ export default function Membership() {
                 </ul>
                 
                 <button 
-                  onClick={() => setSelectedMembership(`${tier.name} - ${routine}x ${serviceType}s`)}
-                  className="w-full py-4 bg-white/5 hover:bg-brand-green hover:text-black transition-all text-[10px] font-bold uppercase tracking-widest rounded-xl border border-white/10"
+                  onClick={() => !isRestricted && setSelectedMembership(`${tier.name} - ${routine}x ${serviceType}s`)}
+                  disabled={isRestricted}
+                  className={cn(
+                    "w-full py-4 transition-all text-[10px] font-bold uppercase tracking-widest rounded-xl border",
+                    isRestricted 
+                      ? "bg-red-500/10 text-red-500 border-red-500/30 cursor-not-allowed" 
+                      : "bg-white/5 hover:bg-brand-green hover:text-black border-white/10"
+                  )}
                 >
-                  Select Plan
+                  {isRestricted ? 'Not Available for Urban' : 'Select Plan'}
                 </button>
               </motion.div>
             );

@@ -4,10 +4,14 @@ import { ShoppingBag, User, LogOut, Menu, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { auth, logout } from '../firebase';
 import { useAuthState } from 'react-firebase-hooks/auth';
+import { useCart } from '../lib/CartContext';
 
 export default function Navbar() {
   const [user] = useAuthState(auth);
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
+  const { items } = useCart();
+  
+  const cartItemCount = items.reduce((total, item) => total + item.quantity, 0);
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 glass-dark border-b border-white/10">
@@ -28,7 +32,11 @@ export default function Navbar() {
         <div className="flex items-center gap-4">
           <Link to="/cart" className="p-2 hover:bg-white/10 rounded-full transition-colors relative">
             <ShoppingBag size={20} />
-            <span className="absolute top-0 right-0 w-4 h-4 bg-brand-green text-black text-[8px] flex items-center justify-center rounded-full font-bold">0</span>
+            {cartItemCount > 0 && (
+              <span className="absolute top-0 right-0 w-4 h-4 bg-brand-green text-black text-[8px] flex items-center justify-center rounded-full font-bold">
+                {cartItemCount}
+              </span>
+            )}
           </Link>
           
           {user ? (

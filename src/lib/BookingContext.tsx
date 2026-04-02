@@ -54,7 +54,15 @@ export function BookingProvider({ children }: { children: ReactNode }) {
       if (isSelected) {
         return { ...prev, selectedServices: prev.selectedServices.filter(s => s.id !== service.id) };
       }
-      return { ...prev, selectedServices: [...prev.selectedServices, service] };
+      
+      const exclusiveIds = ['hair', 'skin', 'urban', 'hairstyle'];
+      let newServices = [...prev.selectedServices];
+      
+      if (exclusiveIds.includes(service.id)) {
+        newServices = newServices.filter(s => !exclusiveIds.includes(s.id));
+      }
+      
+      return { ...prev, selectedServices: [...newServices, service] };
     });
   };
 

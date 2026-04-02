@@ -214,21 +214,31 @@ export default function Services() {
           {services.map((service, i) => {
             const Icon = serviceIcons[service.id];
             const isSelected = state.selectedServices.some(s => s.id === service.id);
+            
+            const exclusiveIds = ['hair', 'skin', 'urban', 'hairstyle'];
+            const selectedExclusive = state.selectedServices.find(s => exclusiveIds.includes(s.id));
+            const isRestricted = exclusiveIds.includes(service.id) && selectedExclusive && selectedExclusive.id !== service.id;
+
             return (
               <motion.div
                 key={service.id}
-                whileHover={{ y: -5 }}
+                whileHover={isRestricted ? {} : { y: -5 }}
                 onClick={() => {
+                  if (isRestricted) return;
                   toggleService(service);
                   if (service.id === 'skin' && !state.selectedServices.some(s => s.id === 'skin')) {
                     setClientType('walk-in');
                   }
                 }}
                 className={cn(
-                  "glass p-8 rounded-3xl cursor-pointer transition-all relative overflow-hidden group",
-                  isSelected ? "border-brand-green bg-brand-green/5" : "hover:border-white/20"
+                  "glass p-8 rounded-3xl transition-all relative overflow-hidden group",
+                  isRestricted ? "border-red-500/30 cursor-not-allowed" : "cursor-pointer",
+                  isSelected ? "border-brand-green bg-brand-green/5" : (!isRestricted && "hover:border-white/20")
                 )}
               >
+                {isRestricted && (
+                  <div className="absolute inset-0 bg-red-950/60 z-10 pointer-events-none" />
+                )}
                 <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity">
                   <Icon size={80} />
                 </div>

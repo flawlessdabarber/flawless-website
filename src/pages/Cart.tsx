@@ -1,9 +1,12 @@
 import React from 'react';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { ShoppingBag, Trash2, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useCart } from '../lib/CartContext';
 
 export default function Cart() {
+  const { items, removeItem, updateQuantity, totalPrice } = useCart();
+
   return (
     <div className="min-h-screen pt-32 pb-24 px-6">
       <div className="container mx-auto max-w-4xl">
@@ -14,16 +17,61 @@ export default function Cart() {
 
         <div className="grid lg:grid-cols-3 gap-12">
           <div className="lg:col-span-2 space-y-6">
-            {/* Empty State */}
-            <div className="glass p-12 rounded-3xl text-center">
-              <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-6">
-                <ShoppingBag className="text-white/20" />
+            {items.length === 0 ? (
+              <div className="glass p-12 rounded-3xl text-center">
+                <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <ShoppingBag className="text-white/20" />
+                </div>
+                <p className="text-white/40 mb-8 uppercase tracking-widest text-sm">Your bag is empty</p>
+                <Link to="/merchandise" className="inline-block px-8 py-4 bg-brand-green text-black font-bold uppercase tracking-widest rounded-sm hover:bg-white transition-all">
+                  Shop Now
+                </Link>
               </div>
-              <p className="text-white/40 mb-8 uppercase tracking-widest text-sm">Your bag is empty</p>
-              <Link to="/merchandise" className="inline-block px-8 py-4 bg-brand-green text-black font-bold uppercase tracking-widest rounded-sm hover:bg-white transition-all">
-                Shop Now
-              </Link>
-            </div>
+            ) : (
+              <div className="space-y-4">
+                <AnimatePresence>
+                  {items.map((item) => (
+                    <motion.div 
+                      key={`${item.id}-${item.size}-${item.color}`}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      className="glass p-6 rounded-3xl flex gap-6 items-center"
+                    >
+                      <div className="w-24 h-24 rounded-2xl overflow-hidden flex-shrink-0">
+                        <img src={item.image} alt={item.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                      </div>
+                      <div className="flex-grow">
+                        <div className="flex justify-between items-start mb-2">
+                          <div>
+                            <p className="text-[10px] uppercase tracking-widest text-brand-green font-bold mb-1">{item.category}</p>
+                            <h4 className="text-lg font-bold uppercase">{item.name}</h4>
+                          </div>
+                          <button 
+                            onClick={() => removeItem(item.id)}
+                            className="text-white/40 hover:text-red-500 transition-colors"
+                          >
+                            <Trash2 size={18} />
+                          </button>
+                        </div>
+                        <div className="flex flex-wrap gap-4 text-sm text-white/60 mb-4">
+                          {item.size && <span>Size: {item.size}</span>}
+                          {item.color && <span>Color: {item.color}</span>}
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <div className="flex items-center gap-4">
+                            <button onClick={() => updateQuantity(item.id, item.quantity - 1)} className="w-8 h-8 rounded-lg border border-white/10 flex items-center justify-center hover:bg-white/5">-</button>
+                            <span className="font-bold w-4 text-center">{item.quantity}</span>
+                            <button onClick={() => updateQuantity(item.id, item.quantity + 1)} className="w-8 h-8 rounded-lg border border-white/10 flex items-center justify-center hover:bg-white/5">+</button>
+                          </div>
+                          <span className="font-bold text-lg">${item.price * item.quantity}</span>
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+              </div>
+            )}
           </div>
 
           <div className="space-y-6">
@@ -32,7 +80,7 @@ export default function Cart() {
               <div className="space-y-4 mb-8">
                 <div className="flex justify-between text-sm">
                   <span className="text-white/40 uppercase tracking-widest">Subtotal</span>
-                  <span className="font-bold">$0.00</span>
+                  <span className="font-bold">${totalPrice.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-white/40 uppercase tracking-widest">Shipping</span>
@@ -41,10 +89,13 @@ export default function Cart() {
                 <div className="h-px bg-white/10 my-4" />
                 <div className="flex justify-between text-xl font-bold">
                   <span className="uppercase tracking-tighter">Total</span>
-                  <span>$0.00</span>
+                  <span>${totalPrice.toFixed(2)}</span>
                 </div>
               </div>
-              <button className="w-full py-4 bg-white text-black font-bold uppercase tracking-widest rounded-xl hover:bg-brand-green transition-all flex items-center justify-center gap-2">
+              <button 
+                disabled={items.length === 0}
+                className="w-full py-4 bg-white text-black font-bold uppercase tracking-widest rounded-xl hover:bg-brand-green transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
                 Checkout <ArrowRight size={18} />
               </button>
             </div>

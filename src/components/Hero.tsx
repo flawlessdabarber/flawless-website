@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { Scissors, Zap, Star, ShieldCheck, Mic } from 'lucide-react';
+import { Scissors, Zap, Star, ShieldCheck, Mic, MapPin, Wind, Palette, Layers } from 'lucide-react';
 import { useAI } from '../lib/AIContext';
 import { cn } from '../lib/utils';
 
@@ -105,24 +105,50 @@ export default function Hero() {
           {/* Buttons removed per request */}
         </motion.div>
 
-        <div className="mt-24 grid grid-cols-2 md:grid-cols-4 gap-12 border-t border-white/10 pt-12 w-full max-w-4xl">
-          {[
-            { icon: Scissors, label: "Precision Cuts" },
-            { icon: Zap, label: "Mobile Service" },
-            { icon: Star, label: "VIP Membership" },
-            { icon: ShieldCheck, label: "Skin Therapy" }
-          ].map((item, i) => (
-            <div key={i} className="flex flex-col items-center gap-3 group">
-              <item.icon className="text-brand-green group-hover:scale-110 transition-transform" />
-              <span className="text-[10px] uppercase tracking-widest opacity-50">{item.label}</span>
-            </div>
-          ))}
+        <div className="mt-24 w-full max-w-5xl mx-auto overflow-hidden slider-mask pt-12 border-t border-white/10">
+          <div className="flex animate-slide hover:[animation-play-state:paused]">
+            {[
+              { icon: Scissors, label: "Precision Cuts" },
+              { icon: MapPin, label: "Mobile Service" },
+              { icon: Star, label: "VIP Membership" },
+              { icon: ShieldCheck, label: "High Profile" },
+              { icon: Zap, label: "Urban Style" },
+              { icon: Wind, label: "Clean Up" },
+              { icon: Palette, label: "Hair Style" },
+              { icon: Layers, label: "Sessions" },
+              // Duplicate for infinite scroll
+              { icon: Scissors, label: "Precision Cuts" },
+              { icon: MapPin, label: "Mobile Service" },
+              { icon: Star, label: "VIP Membership" },
+              { icon: ShieldCheck, label: "High Profile" },
+              { icon: Zap, label: "Urban Style" },
+              { icon: Wind, label: "Clean Up" },
+              { icon: Palette, label: "Hair Style" },
+              { icon: Layers, label: "Sessions" }
+            ].map((item, i) => (
+              <div key={i} className="w-[50%] md:w-1/6 flex-shrink-0 flex flex-col items-center justify-center gap-4 group px-4">
+                <item.icon className="text-white/50 group-hover:text-brand-green w-10 h-10 transition-colors duration-300" />
+                <span className="text-[10px] uppercase tracking-widest opacity-50 whitespace-nowrap">{item.label}</span>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
       <style>{`
         .border-text {
           -webkit-text-stroke: 1px white;
+        }
+        @keyframes slide {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+        .animate-slide {
+          animation: slide 12s linear infinite;
+        }
+        .slider-mask {
+          mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+          -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
         }
       `}</style>
     </section>
