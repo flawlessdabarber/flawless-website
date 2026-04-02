@@ -1,10 +1,68 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { Play, Mic2, ExternalLink } from 'lucide-react';
+import { Play, Mic2, ExternalLink, MessageSquare } from 'lucide-react';
 import { useAI } from '../lib/AIContext';
 
 export default function Podcast() {
   const { setSelectedPodcast } = useAI();
+  const [timeLeft, setTimeLeft] = useState('');
+  const [nextDay, setNextDay] = useState<number | null>(null);
+
+  useEffect(() => {
+    const calculateTimeLeft = () => {
+      const now = new Date();
+      const nyString = now.toLocaleString("en-US", { timeZone: "America/New_York" });
+      const nyDate = new Date(nyString);
+      
+      const currentDay = nyDate.getDay();
+      const currentHour = nyDate.getHours();
+      
+      const showDays = [0, 2, 4]; // Sun, Tue, Thu
+      let daysUntilNextShow = 7;
+      let nextShowDay = 0;
+
+      for (const day of showDays) {
+        let diff = day - currentDay;
+        if (diff < 0) diff += 7;
+        
+        // Show is at 6 PM (18:00). Assume it lasts 1 hour.
+        // If it's today and past 7 PM (19:00), look for the next show.
+        if (diff === 0 && currentHour >= 19) {
+          diff = 7; 
+        }
+        
+        if (diff < daysUntilNextShow) {
+          daysUntilNextShow = diff;
+          nextShowDay = day;
+        }
+      }
+
+      const nextShowDate = new Date(nyDate);
+      nextShowDate.setDate(nyDate.getDate() + daysUntilNextShow);
+      nextShowDate.setHours(18, 0, 0, 0);
+
+      const diffMs = nextShowDate.getTime() - nyDate.getTime();
+      
+      // If it's between 6 PM and 7 PM on a show day
+      if (diffMs <= 0 && diffMs > -3600000) {
+         setTimeLeft("LIVE NOW");
+         setNextDay(currentDay);
+         return;
+      }
+
+      const d = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+      const h = Math.floor((diffMs / (1000 * 60 * 60)) % 24);
+      const m = Math.floor((diffMs / 1000 / 60) % 60);
+      const s = Math.floor((diffMs / 1000) % 60);
+
+      setTimeLeft(`${d}d ${h}h ${m}m ${s}s`);
+      setNextDay(nextShowDay);
+    };
+
+    calculateTimeLeft();
+    const timer = setInterval(calculateTimeLeft, 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   return (
     <section id="podcast" className="py-24 bg-brand-gray/10 overflow-hidden">
@@ -15,25 +73,39 @@ export default function Podcast() {
             whileInView={{ opacity: 1, x: 0 }}
             className="text-center lg:text-left"
           >
-            <span className="text-brand-green font-mono text-xs tracking-widest uppercase mb-4 block">The Culture Talk</span>
-            <h2 className="text-5xl md:text-7xl font-bold uppercase tracking-tighter mb-8">Flawless <br /> Conversations</h2>
+            <span className="text-brand-green font-mono text-xs tracking-widest uppercase mb-4 block">YouTube Channel</span>
+            <h2 className="text-5xl md:text-7xl font-bold uppercase tracking-tighter mb-4">FDB <br /> Live</h2>
+            
+            <div className="font-bold uppercase tracking-widest text-sm mb-6">
+              <span className="text-gray-400">Showtimes</span>{' '}
+              <span className={nextDay === 0 ? "text-brand-green animate-pulse" : "text-brand-green"}>Sun</span> <span className="text-brand-green">|</span>{' '}
+              <span className={nextDay === 2 ? "text-brand-green animate-pulse" : "text-brand-green"}>Tue</span> <span className="text-brand-green">|</span>{' '}
+              <span className={nextDay === 4 ? "text-brand-green animate-pulse" : "text-brand-green"}>Thurs</span> <span className="text-brand-green">|</span>{' '}
+              <span className="text-white">Live 6pm EST.</span>
+            </div>
+            
+            <div className="mb-8">
+              <p className="text-[10px] uppercase tracking-widest opacity-50 mb-1">Upcoming Show In</p>
+              <p className="text-3xl font-mono font-bold text-brand-green">{timeLeft || "Loading..."}</p>
+            </div>
+
             <p className="text-white/60 mb-8 text-lg leading-relaxed max-w-2xl mx-auto lg:mx-0">
               Dive into the minds of industry leaders, entrepreneurs, and cultural icons. We discuss everything from grooming trends to investment strategies and community growth.
             </p>
             <div className="flex flex-wrap gap-4 justify-center lg:justify-start">
               <button 
-                onClick={() => setSelectedPodcast('Latest Episode: Building a Grooming Empire')}
+                onClick={() => setSelectedPodcast('Text Reminder Request')}
                 className="flex items-center gap-3 px-8 py-4 bg-brand-green text-black font-bold uppercase tracking-widest rounded-sm"
               >
-                <Play size={20} fill="currentColor" />
-                Listen Now
+                <MessageSquare size={20} />
+                Get Text Reminded
               </button>
               <button 
                 onClick={() => setSelectedPodcast('Guest Request')}
                 className="flex items-center gap-3 px-8 py-4 border border-white/20 hover:bg-white/10 transition-all uppercase tracking-widest rounded-sm"
               >
                 <Mic2 size={20} />
-                Be A Guest
+                Become A Guest
               </button>
             </div>
           </motion.div>

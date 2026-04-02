@@ -153,7 +153,7 @@ export function AIProvider({ children }: { children: ReactNode }) {
           You are synced with all sections of the website:
           - BOOKING: Help clients book hair/skin services (In-Store, Mobile Visit, Walk-in/Member). Explain pricing (Overtime, Sunday fees).
           - EVENTS: Provide info on upcoming events like the Grooming Workshop or Summer Bash.
-          - PODCAST: Talk about "Flawless Conversations" and the culture talk.
+          - PODCAST: Talk about "FDB Live" and the YouTube Channel.
           - MEMBERSHIPS: Explain monthly plans (Kids, Adults, Corporate, Investment).
           - MERCHANDISE: Help with premium goods like Pomade, Elixir, or Tees.
           - BODY OF WORK: Explain our portfolio of precision fades, textured crops, and modern pompadours.

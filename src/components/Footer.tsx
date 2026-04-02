@@ -28,7 +28,7 @@ export default function Footer() {
               <li><Link to="/services" className="hover:text-brand-green transition-colors">Services</Link></li>
               <li><Link to="/membership" className="hover:text-brand-green transition-colors">Membership</Link></li>
               <li><Link to="/merchandise" className="hover:text-brand-green transition-colors">Shop</Link></li>
-              <li><Link to="/podcast" className="hover:text-brand-green transition-colors">Podcast</Link></li>
+              <li><Link to="/podcast" className="hover:text-brand-green transition-colors">FDB Live</Link></li>
             </ul>
           </div>
 

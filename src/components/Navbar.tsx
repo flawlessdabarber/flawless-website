@@ -21,7 +21,7 @@ export default function Navbar() {
           <Link to="/services" className="hover:text-brand-green transition-colors">Services</Link>
           <Link to="/membership" className="hover:text-brand-green transition-colors">Membership</Link>
           <Link to="/merchandise" className="hover:text-brand-green transition-colors">Shop</Link>
-          <Link to="/podcast" className="hover:text-brand-green transition-colors">Podcast</Link>
+          <Link to="/podcast" className="hover:text-brand-green transition-colors">FDB Live</Link>
           <Link to="/events" className="hover:text-brand-green transition-colors">Events</Link>
         </div>
 
@@ -62,7 +62,7 @@ export default function Navbar() {
           <Link to="/services" onClick={() => setIsMenuOpen(false)}>Services</Link>
           <Link to="/membership" onClick={() => setIsMenuOpen(false)}>Membership</Link>
           <Link to="/merchandise" onClick={() => setIsMenuOpen(false)}>Shop</Link>
-          <Link to="/podcast" onClick={() => setIsMenuOpen(false)}>Podcast</Link>
+          <Link to="/podcast" onClick={() => setIsMenuOpen(false)}>FDB Live</Link>
           <Link to="/events" onClick={() => setIsMenuOpen(false)}>Events</Link>
         </motion.div>
       )}
