@@ -60,6 +60,43 @@ const months = [
 export default function Services() {
   const { state, toggleService, setLocationType, setClientType, setDate, setTime, setAddress, setMonth, totalPrice, isOvertime, isSunday, isDayOffFee } = useBooking();
   
+  const now = new Date();
+  const currentMonth = now.getMonth();
+  const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+
+  const getReservedTimes = (dateStr: string) => {
+    const hash = dateStr.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    const reserved = [];
+    if (hash % 2 === 0) reserved.push('10:00 AM');
+    if (hash % 3 === 0) reserved.push('2:00 PM');
+    if (hash % 4 === 0) reserved.push('4:00 PM');
+    if (hash % 5 === 0) reserved.push('7:00 PM');
+    return reserved;
+  };
+
+  const parseTime = (timeStr: string) => {
+    const [hourStr, minuteAmPm] = timeStr.split(':');
+    const [minuteStr, ampm] = minuteAmPm.split(' ');
+    let hour = parseInt(hourStr);
+    if (ampm === 'PM' && hour !== 12) hour += 12;
+    if (ampm === 'AM' && hour === 12) hour = 0;
+    return { hour, minute: parseInt(minuteStr) };
+  };
+
+  const isPastTime = (timeStr: string) => {
+    if (!state.date) return false;
+    if (state.date < todayStr) return true;
+    if (state.date > todayStr) return false;
+    
+    const { hour, minute } = parseTime(timeStr);
+    const nowHour = now.getHours();
+    const nowMinute = now.getMinutes();
+    
+    if (hour < nowHour) return true;
+    if (hour === nowHour && minute <= nowMinute) return true;
+    return false;
+  };
+
   // Generate days for selected month
   const getDaysInMonth = (month: number) => {
     const year = new Date().getFullYear();
@@ -267,8 +304,9 @@ export default function Services() {
             </div>
             <div className="flex items-center gap-4">
               <button 
-                onClick={() => setMonth(Math.max(0, state.selectedMonth - 1))}
-                className="p-2 glass rounded-full hover:bg-white/10 transition-colors"
+                onClick={() => setMonth(Math.max(currentMonth, state.selectedMonth - 1))}
+                disabled={state.selectedMonth <= currentMonth}
+                className={cn("p-2 glass rounded-full transition-colors", state.selectedMonth <= currentMonth ? "opacity-30 cursor-not-allowed text-red-500" : "hover:bg-white/10")}
               >
                 <ChevronLeft size={20} />
               </button>
@@ -292,17 +330,21 @@ export default function Services() {
             </div>
             <div className="flex gap-4 overflow-x-auto pb-4 no-scrollbar">
               {dates.map((date, i) => {
-                const dateStr = date.toISOString().split('T')[0];
+                const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
                 const isSelected = state.date === dateStr;
                 const isSundayDate = date.getDay() === 0;
+                const isPastDate = dateStr < todayStr;
                 return (
                   <button
                     key={i}
-                    onClick={() => setDate(dateStr)}
+                    onClick={() => !isPastDate && setDate(dateStr)}
+                    disabled={isPastDate}
                     className={cn(
                       "flex-shrink-0 w-24 h-28 rounded-2xl flex flex-col items-center justify-center gap-1 transition-all relative overflow-hidden",
-                      isSelected ? "bg-brand-green text-black" : "glass hover:bg-white/10",
-                      isSundayDate && !isSelected && "opacity-30 grayscale"
+                      isSelected ? "bg-brand-green text-black" : "glass",
+                      !isPastDate && !isSelected && "hover:bg-white/10",
+                      isPastDate && "opacity-40 bg-red-950/20 border-red-900/30 text-red-500/70 cursor-not-allowed",
+                      isSundayDate && !isSelected && !isPastDate && "opacity-30 grayscale"
                     )}
                   >
                     {isSundayDate && (
@@ -335,18 +377,30 @@ export default function Services() {
               {timeSlots.map((time, i) => {
                 const isSelected = state.time === time;
                 const overtime = isOvertimeSlot(time);
+                const reservedTimes = state.date ? getReservedTimes(state.date) : [];
+                const past = isPastTime(time);
+                const reserved = reservedTimes.includes(time);
+                const disabled = past || reserved;
+
                 return (
                   <button
                     key={i}
-                    onClick={() => setTime(time)}
+                    onClick={() => !disabled && setTime(time)}
+                    disabled={disabled}
                     className={cn(
-                      "py-4 rounded-xl font-bold text-sm transition-all relative overflow-hidden",
-                      isSelected ? "bg-brand-green text-black" : "glass hover:bg-white/10",
-                      overtime && !isSelected && "opacity-30 grayscale"
+                      "py-4 rounded-xl font-bold text-sm transition-all relative overflow-hidden flex flex-col items-center justify-center",
+                      isSelected ? "bg-brand-green text-black" : "glass",
+                      !disabled && !isSelected && "hover:bg-white/10",
+                      past && !reserved && "opacity-40 bg-red-950/20 border-red-900/30 text-red-500/70 cursor-not-allowed",
+                      reserved && "opacity-40 bg-white/5 border-white/10 text-white/40 cursor-not-allowed",
+                      overtime && !isSelected && !disabled && "opacity-30 grayscale"
                     )}
                   >
                     {time}
-                    {overtime && (
+                    {reserved && (
+                      <span className="text-[8px] uppercase tracking-widest mt-1 text-white/50">Taken</span>
+                    )}
+                    {overtime && !reserved && (
                       <span className="absolute top-1 right-1 text-[8px] uppercase tracking-tighter opacity-50">
                         OT
                       </span>
