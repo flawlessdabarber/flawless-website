@@ -23,7 +23,7 @@ export default function CommunityBanner() {
         <h3 className="text-5xl md:text-7xl font-bold uppercase tracking-tighter leading-none flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
           <span>Join us on WhatsApp</span>
           <span className="text-brand-green flex items-center gap-4">
-            F-Life
+            F Life
             <div className="w-10 h-10 md:w-14 md:h-14 rounded-full bg-brand-green text-black flex items-center justify-center shrink-0 animate-[bounce-x_1s_infinite]">
               <ArrowRight className="w-5 h-5 md:w-8 md:h-8" />
             </div>

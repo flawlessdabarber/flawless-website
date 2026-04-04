@@ -64,6 +64,28 @@ export default function Services() {
   const currentMonth = now.getMonth();
   const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 
+  const scrollRef = React.useRef<HTMLDivElement>(null);
+  const [isDragging, setIsDragging] = React.useState(false);
+  const [startX, setStartX] = React.useState(0);
+  const [scrollLeft, setScrollLeft] = React.useState(0);
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (!scrollRef.current) return;
+    setIsDragging(true);
+    setStartX(e.pageX - scrollRef.current.offsetLeft);
+    setScrollLeft(scrollRef.current.scrollLeft);
+  };
+
+  const handleMouseLeave = () => setIsDragging(false);
+  const handleMouseUp = () => setIsDragging(false);
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging || !scrollRef.current) return;
+    e.preventDefault();
+    const x = e.pageX - scrollRef.current.offsetLeft;
+    const walk = (x - startX) * 2;
+    scrollRef.current.scrollLeft = scrollLeft - walk;
+  };
+
   const getReservedTimes = (dateStr: string) => {
     const hash = dateStr.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
     const reserved = [];
@@ -140,12 +162,12 @@ export default function Services() {
             <span className="text-brand-green font-mono text-xs tracking-widest uppercase mb-4 block">Our Expertise</span>
             <h2 className="text-5xl md:text-7xl font-bold uppercase tracking-tighter">Book a <br /> Reservation</h2>
           </div>
-          <div className="flex flex-wrap gap-4 md:gap-8">
-            <div className="flex flex-col gap-4">
+          <div className="flex flex-col md:flex-row gap-4 md:gap-8 w-full md:w-auto">
+            <div className="grid grid-cols-2 md:flex md:flex-col gap-4 w-full md:w-auto">
               <button 
                 onClick={() => setLocationType('in-store')}
                 className={cn(
-                  "glass px-6 py-4 rounded-xl flex items-center gap-3 transition-all relative overflow-hidden w-48",
+                  "glass px-4 md:px-6 py-4 rounded-xl flex items-center gap-2 md:gap-3 transition-all relative overflow-hidden w-full md:w-48",
                   state.locationType === 'in-store' ? "border-brand-green bg-brand-green/20 shadow-[0_0_20px_rgba(0,255,0,0.2)]" : "opacity-50 hover:opacity-100"
                 )}
               >
@@ -164,7 +186,7 @@ export default function Services() {
               <button 
                 onClick={() => setLocationType('mobile')}
                 className={cn(
-                  "glass px-6 py-4 rounded-xl flex items-center gap-3 transition-all relative overflow-hidden w-48",
+                  "glass px-4 md:px-6 py-4 rounded-xl flex items-center gap-2 md:gap-3 transition-all relative overflow-hidden w-full md:w-48",
                   state.locationType === 'mobile' ? "border-brand-green bg-brand-green/20 shadow-[0_0_20px_rgba(0,255,0,0.2)]" : "opacity-50 hover:opacity-100"
                 )}
               >
@@ -182,12 +204,12 @@ export default function Services() {
               </button>
             </div>
 
-            <div className="flex flex-col gap-4">
+            <div className="grid grid-cols-2 md:flex md:flex-col gap-4 w-full md:w-auto">
               <button 
                 onClick={() => state.locationType !== 'mobile' && setClientType('member')}
                 disabled={state.locationType === 'mobile'}
                 className={cn(
-                  "glass px-6 py-4 rounded-xl flex items-center gap-3 transition-all relative overflow-hidden w-48",
+                  "glass px-4 md:px-6 py-4 rounded-xl flex items-center gap-2 md:gap-3 transition-all relative overflow-hidden w-full md:w-48",
                   state.locationType === 'mobile' 
                     ? "opacity-40 bg-red-950/20 border-red-900/30 text-red-500/70 cursor-not-allowed" 
                     : state.clientType === 'member' 
@@ -210,7 +232,7 @@ export default function Services() {
               <button 
                 onClick={() => setClientType('walk-in')}
                 className={cn(
-                  "glass px-6 py-4 rounded-xl flex items-center gap-3 transition-all relative overflow-hidden w-48",
+                  "glass px-4 md:px-6 py-4 rounded-xl flex items-center gap-2 md:gap-3 transition-all relative overflow-hidden w-full md:w-48",
                   state.clientType === 'walk-in' ? "border-brand-green bg-brand-green/20 shadow-[0_0_20px_rgba(0,255,0,0.2)]" : "opacity-50 hover:opacity-100"
                 )}
               >
@@ -228,11 +250,11 @@ export default function Services() {
               </button>
             </div>
 
-            <div className="flex flex-col gap-4">
+            <div className="grid grid-cols-2 md:flex md:flex-col gap-4 w-full md:w-auto">
               <button 
                 onClick={() => setAgeGroup('kids')}
                 className={cn(
-                  "glass px-6 py-4 rounded-xl flex items-center gap-3 transition-all relative overflow-hidden w-48",
+                  "glass px-4 md:px-6 py-4 rounded-xl flex items-center gap-2 md:gap-3 transition-all relative overflow-hidden w-full md:w-48",
                   state.ageGroup === 'kids' ? "border-brand-green bg-brand-green/20 shadow-[0_0_20px_rgba(0,255,0,0.2)]" : "opacity-50 hover:opacity-100"
                 )}
               >
@@ -251,7 +273,7 @@ export default function Services() {
               <button 
                 onClick={() => setAgeGroup('adults')}
                 className={cn(
-                  "glass px-6 py-4 rounded-xl flex items-center gap-3 transition-all relative overflow-hidden w-48",
+                  "glass px-4 md:px-6 py-4 rounded-xl flex items-center gap-2 md:gap-3 transition-all relative overflow-hidden w-full md:w-48",
                   state.ageGroup === 'adults' ? "border-brand-green bg-brand-green/20 shadow-[0_0_20px_rgba(0,255,0,0.2)]" : "opacity-50 hover:opacity-100"
                 )}
               >
@@ -397,7 +419,17 @@ export default function Services() {
               <CalendarIcon className="text-brand-green" size={20} />
               <h3 className="text-xl font-bold uppercase tracking-tighter">Select Date</h3>
             </div>
-            <div className="flex gap-4 overflow-x-auto pb-4 no-scrollbar">
+            <div 
+              ref={scrollRef}
+              onMouseDown={handleMouseDown}
+              onMouseLeave={handleMouseLeave}
+              onMouseUp={handleMouseUp}
+              onMouseMove={handleMouseMove}
+              className={cn(
+                "flex gap-4 overflow-x-auto pb-4 no-scrollbar",
+                isDragging ? "cursor-grabbing" : "cursor-grab"
+              )}
+            >
               {dates.map((date, i) => {
                 const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
                 const isSelected = state.date === dateStr;
