@@ -67,13 +67,13 @@ export default function BodyOfWork() {
 
         {/* Filter */}
         <div className="flex justify-center mb-16">
-          <div className="flex flex-wrap justify-center gap-2 md:gap-4 glass p-2 rounded-full">
+          <div className="flex flex-wrap justify-center gap-2 md:gap-4 glass p-2 rounded-2xl">
             {categories.map((category) => (
               <button
                 key={category}
                 onClick={() => handleCategoryChange(category)}
                 className={cn(
-                  "px-4 md:px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-all",
+                  "px-4 md:px-6 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all",
                   activeCategory === category 
                     ? "border border-brand-green text-brand-green bg-brand-green/10" 
                     : "border border-white/10 text-white/50 hover:border-white/30 hover:text-white"
