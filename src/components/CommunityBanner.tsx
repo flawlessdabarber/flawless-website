@@ -5,7 +5,7 @@ export default function CommunityBanner() {
   return (
     <a 
       href="#" 
-      className="relative h-[150px] w-full overflow-hidden flex items-center justify-center group cursor-pointer border-y border-white/10 block"
+      className="relative h-[150px] w-full overflow-hidden flex items-center justify-center group cursor-pointer block"
     >
       {/* Background Image */}
       <div 

@@ -19,6 +19,7 @@ interface BookingState {
   memberId: string | null;
   date: string | null;
   time: string | null;
+  barber: string | null;
   address: string;
   selectedMonth: number; // 0-11
 }
@@ -31,6 +32,7 @@ interface BookingContextType {
   setAgeGroup: (type: AgeGroup) => void;
   setDate: (date: string) => void;
   setTime: (time: string) => void;
+  setBarber: (barber: string) => void;
   setAddress: (address: string) => void;
   setMonth: (month: number) => void;
   totalPrice: number;
@@ -51,6 +53,7 @@ export function BookingProvider({ children }: { children: ReactNode }) {
     memberId: null,
     date: null,
     time: null,
+    barber: null,
     address: '',
     selectedMonth: new Date().getMonth(),
   });
@@ -90,6 +93,7 @@ export function BookingProvider({ children }: { children: ReactNode }) {
   const setAgeGroup = (ageGroup: AgeGroup) => setState(prev => ({ ...prev, ageGroup }));
   const setDate = (date: string) => setState(prev => ({ ...prev, date }));
   const setTime = (time: string) => setState(prev => ({ ...prev, time }));
+  const setBarber = (barber: string) => setState(prev => ({ ...prev, barber }));
   const setAddress = (address: string) => setState(prev => ({ ...prev, address }));
   const setMonth = (selectedMonth: number) => setState(prev => ({ ...prev, selectedMonth }));
 
@@ -169,7 +173,7 @@ export function BookingProvider({ children }: { children: ReactNode }) {
   const totalPrice = calculatedPrice;
 
   return (
-    <BookingContext.Provider value={{ state, toggleService, setLocationType, setClientType, setAgeGroup, setDate, setTime, setAddress, setMonth, totalPrice, isOvertime, isSunday, isDayOffFee, otFee }}>
+    <BookingContext.Provider value={{ state, toggleService, setLocationType, setClientType, setAgeGroup, setDate, setTime, setBarber, setAddress, setMonth, totalPrice, isOvertime, isSunday, isDayOffFee, otFee }}>
       {children}
     </BookingContext.Provider>
   );

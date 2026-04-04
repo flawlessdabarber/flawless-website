@@ -57,8 +57,20 @@ const months = [
   'July', 'August', 'September', 'October', 'November', 'December'
 ];
 
+const barbers = [
+  { id: 'flawless', name: 'Flawless', image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=800&auto=format&fit=crop&grayscale=true' },
+  { id: 'marcus', name: 'Marcus', image: 'https://images.unsplash.com/photo-1583864697784-a0efc8379f70?q=80&w=800&auto=format&fit=crop&grayscale=true' },
+  { id: 'david', name: 'David', image: 'https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?q=80&w=800&auto=format&fit=crop&grayscale=true' },
+  { id: 'james', name: 'James', image: 'https://images.unsplash.com/photo-1542909168-82c3e7fdca5c?q=80&w=800&auto=format&fit=crop&grayscale=true' },
+  { id: 'michael', name: 'Michael', image: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=800&auto=format&fit=crop&grayscale=true' }
+];
+
 export default function Services() {
-  const { state, toggleService, setLocationType, setClientType, setAgeGroup, setDate, setTime, setAddress, setMonth, totalPrice, isOvertime, isSunday, isDayOffFee, otFee } = useBooking();
+  const { state, toggleService, setLocationType, setClientType, setAgeGroup, setDate, setTime, setBarber, setAddress, setMonth, totalPrice, isOvertime, isSunday, isDayOffFee, otFee } = useBooking();
+  
+  const [barberIndex, setBarberIndex] = React.useState(0);
+  const [leftClicks, setLeftClicks] = React.useState(0);
+  const [rightClicks, setRightClicks] = React.useState(0);
   
   const now = new Date();
   const currentMonth = now.getMonth();
@@ -514,6 +526,125 @@ export default function Services() {
               * Overtime slots (7-9 AM & 10 PM-12 AM) incur a 2x fee
             </p>
           </div>
+
+          {/* Barber Selector */}
+          <div className="mt-12">
+            <div className="flex items-center gap-2 mb-6">
+              <User className="text-brand-green" size={20} />
+              <h3 className="text-xl font-bold uppercase tracking-tighter">Select Barber</h3>
+            </div>
+            
+            <div className="relative w-full max-w-3xl mx-auto flex items-center justify-center">
+              <button 
+                onClick={() => {
+                  setLeftClicks(c => c + 1);
+                  setBarberIndex(prev => (prev === 0 ? barbers.length - 1 : prev - 1));
+                }}
+                className="absolute left-0 z-20 p-2 glass rounded-full hover:bg-white/10 transition-colors"
+              >
+                <motion.div
+                  key={leftClicks}
+                  initial={{ color: "#ffffff", scale: 1, filter: "drop-shadow(0 0 0px #00ff00)" }}
+                  animate={leftClicks > 0 ? { 
+                    color: ["#ffffff", "#00ff00", "#ffffff", "#808080", "#00ff00", "#ffffff", "#ffffff"],
+                    scale: [1, 1.6, 0.7, 1.4, 0.8, 1.2, 1],
+                    x: [0, -8, 8, -4, 4, -2, 0],
+                    y: [0, 4, -4, 2, -2, 1, 0],
+                    skewX: [0, 30, -30, 15, -15, 5, 0],
+                    opacity: [1, 0, 1, 0.2, 1, 0.5, 1],
+                    filter: [
+                      "drop-shadow(0 0 0px #00ff00)",
+                      "drop-shadow(0 0 40px #00ff00)",
+                      "drop-shadow(0 0 10px #ffffff)",
+                      "drop-shadow(0 0 50px #00ff00)",
+                      "drop-shadow(0 0 20px #808080)",
+                      "drop-shadow(0 0 30px #00ff00)",
+                      "drop-shadow(0 0 0px #00ff00)"
+                    ]
+                  } : { color: "#ffffff" }}
+                  transition={{ duration: 0.5, ease: "easeInOut" }}
+                >
+                  <ChevronLeft size={24} />
+                </motion.div>
+              </button>
+
+              <div className="flex items-center justify-center gap-4 overflow-hidden w-full px-12 py-4">
+                {[-1, 0, 1].map((offset) => {
+                  let index = (barberIndex + offset) % barbers.length;
+                  if (index < 0) index += barbers.length;
+                  const barber = barbers[index];
+                  const isCenter = offset === 0;
+                  const isSelected = state.barber === barber.id;
+
+                  return (
+                    <button
+                      key={`${barber.id}-${offset}`}
+                      onClick={() => setBarber(barber.id)}
+                      className={cn(
+                        "relative flex flex-col items-center gap-4 transition-all duration-500",
+                        isCenter ? "w-48 opacity-100 scale-110 z-10" : "w-32 opacity-30 scale-90 blur-[2px]",
+                        isSelected && isCenter ? "ring-2 ring-brand-green ring-offset-4 ring-offset-black rounded-2xl" : ""
+                      )}
+                    >
+                      <div className="relative w-full aspect-[3/4] rounded-2xl overflow-hidden bg-black">
+                        <img 
+                          src={barber.image} 
+                          alt={barber.name}
+                          className="w-full h-full object-cover grayscale contrast-[1.2] brightness-90 mix-blend-screen"
+                          referrerPolicy="no-referrer"
+                        />
+                        <div className="absolute inset-0 shadow-[inset_0_0_40px_20px_black] pointer-events-none" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent pointer-events-none" />
+                        
+                        {isCenter && (
+                          <div className="absolute bottom-0 left-0 right-0 p-4 text-center z-20">
+                            <h4 className="text-lg font-bold uppercase tracking-widest text-white mb-1">{barber.name}</h4>
+                            <p className="text-[10px] uppercase tracking-widest text-brand-green">
+                              {state.date ? new Date(state.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'Select Date'}
+                              {state.time ? ` @ ${state.time}` : ''}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+
+              <button 
+                onClick={() => {
+                  setRightClicks(c => c + 1);
+                  setBarberIndex(prev => (prev === barbers.length - 1 ? 0 : prev + 1));
+                }}
+                className="absolute right-0 z-20 p-2 glass rounded-full hover:bg-white/10 transition-colors"
+              >
+                <motion.div
+                  key={rightClicks}
+                  initial={{ color: "#ffffff", scale: 1, filter: "drop-shadow(0 0 0px #00ff00)" }}
+                  animate={rightClicks > 0 ? { 
+                    color: ["#ffffff", "#00ff00", "#ffffff", "#808080", "#00ff00", "#ffffff", "#ffffff"],
+                    scale: [1, 1.6, 0.7, 1.4, 0.8, 1.2, 1],
+                    x: [0, 8, -8, 4, -4, 2, 0],
+                    y: [0, 4, -4, 2, -2, 1, 0],
+                    skewX: [0, -30, 30, -15, 15, -5, 0],
+                    opacity: [1, 0, 1, 0.2, 1, 0.5, 1],
+                    filter: [
+                      "drop-shadow(0 0 0px #00ff00)",
+                      "drop-shadow(0 0 40px #00ff00)",
+                      "drop-shadow(0 0 10px #ffffff)",
+                      "drop-shadow(0 0 50px #00ff00)",
+                      "drop-shadow(0 0 20px #808080)",
+                      "drop-shadow(0 0 30px #00ff00)",
+                      "drop-shadow(0 0 0px #00ff00)"
+                    ]
+                  } : { color: "#ffffff" }}
+                  transition={{ duration: 0.5, ease: "easeInOut" }}
+                >
+                  <ChevronRight size={24} />
+                </motion.div>
+              </button>
+            </div>
+          </div>
         </div>
 
         <div className="mt-16 text-center">
@@ -560,6 +691,13 @@ export default function Services() {
                       {state.date ? new Date(state.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'Select Date'} 
                       {' @ '} 
                       {state.time || 'Select Time'}
+                    </p>
+                  </div>
+                  <div className="hidden md:block w-px h-8 bg-white/10" />
+                  <div>
+                    <p className="text-[10px] uppercase tracking-widest opacity-50 mb-1">Barber</p>
+                    <p className="text-sm font-bold uppercase">
+                      {state.barber ? barbers.find(b => b.id === state.barber)?.name : 'Any'}
                     </p>
                   </div>
                 </div>

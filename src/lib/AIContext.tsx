@@ -159,6 +159,7 @@ export function AIProvider({ children }: { children: ReactNode }) {
         - Member ID: ${bookingState.memberId || 'N/A'}
         - Date: ${bookingState.date || 'Not selected'}
         - Time: ${bookingState.time || 'Not selected'}
+        - Barber: ${bookingState.barber || 'Not selected'}
         - Reserved Times for Selected Date: ${reservedTimesText}
         - Mobile Address: ${bookingState.address || 'Not provided'}
         - Selected Event: ${selectedEvent || 'None'}
@@ -187,6 +188,7 @@ export function AIProvider({ children }: { children: ReactNode }) {
              - 12am & 7am: $200 adult, $100 kids
           4. MEMBER PRICING: If the client is a Member, Hair Cuts, Hair Styles, and Urban Styles are $0. A 6-character Member ID is generated and displayed.
           5. MOBILE VISITS: Mobile visits force the 'Walk-in' client type. Members cannot use member pricing for mobile visits. Mobile visit pricing: Adults (Hair Cuts $250, Hair Styles $300, Urban Style $450), Kids (Hair Cuts $150, Hair Styles $200, Urban Style $325).
+          6. SELECT BARBER: The user can select a specific barber for their appointment. The available barbers are Flawless, Marcus, David, James, and Michael. If a barber is selected, confirm their availability.
 
           - EVENTS: Provide info on upcoming events like the Grooming Workshop or Summer Bash.
           - PODCAST: Talk about "FDB Live" and the YouTube Channel.

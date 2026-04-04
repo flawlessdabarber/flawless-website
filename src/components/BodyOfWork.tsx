@@ -24,17 +24,24 @@ export default function BodyOfWork() {
   const { setSelectedWork } = useAI();
   const [activeCategory, setActiveCategory] = useState('All');
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [leftClicks, setLeftClicks] = useState(0);
+  const [rightClicks, setRightClicks] = useState(0);
+  const [selectedId, setSelectedId] = useState<number | null>(null);
 
   const filteredStyles = activeCategory === 'All' 
     ? portfolioItems 
     : portfolioItems.filter(item => item.category === activeCategory);
 
   const next = () => {
+    setRightClicks(c => c + 1);
     setCurrentIndex((prev) => (prev + 1) % filteredStyles.length);
+    setSelectedId(null);
   };
 
   const prev = () => {
+    setLeftClicks(c => c + 1);
     setCurrentIndex((prev) => (prev - 1 + filteredStyles.length) % filteredStyles.length);
+    setSelectedId(null);
   };
 
   const currentStyle = filteredStyles[currentIndex];
@@ -58,24 +65,8 @@ export default function BodyOfWork() {
           </div>
         </div>
 
-        {/* Controls (Arrows) */}
-        <div className="flex justify-center gap-4 mb-8">
-          <button 
-            onClick={prev}
-            className="w-12 h-12 glass rounded-full flex items-center justify-center hover:bg-brand-green hover:text-black transition-all"
-          >
-            <ChevronLeft size={24} />
-          </button>
-          <button 
-            onClick={next}
-            className="w-12 h-12 glass rounded-full flex items-center justify-center hover:bg-brand-green hover:text-black transition-all"
-          >
-            <ChevronRight size={24} />
-          </button>
-        </div>
-
         {/* Filter */}
-        <div className="flex justify-center">
+        <div className="flex justify-center mb-16">
           <div className="flex flex-wrap justify-center gap-2 md:gap-4 glass p-2 rounded-full">
             {categories.map((category) => (
               <button
@@ -93,66 +84,121 @@ export default function BodyOfWork() {
             ))}
           </div>
         </div>
-      </div>
 
-      <div className="container mx-auto px-6">
         {filteredStyles.length === 0 ? (
           <div className="h-[400px] flex items-center justify-center text-white/50 uppercase tracking-widest">
             No styles found in this category.
           </div>
         ) : (
-          <div className="relative h-[600px] flex items-center justify-center mb-12">
-            
-            {/* Previous Slide (Partial) */}
-            {filteredStyles.length > 1 && (
-              <div 
-                className="absolute left-0 w-1/3 h-[400px] opacity-30 scale-75 -translate-x-1/2 cursor-pointer z-0 hidden md:block"
-                onClick={prev}
-              >
-                <img src={filteredStyles[getSlideIndex(-1)].image} alt="Previous" className="w-full h-full object-cover rounded-3xl grayscale transition-all duration-700" referrerPolicy="no-referrer" />
-              </div>
-            )}
-
-            {/* Current Slide */}
-            <AnimatePresence mode="wait">
+          <div className="relative w-full max-w-5xl mx-auto flex items-center justify-center py-12">
+            <button 
+              onClick={prev}
+              className="absolute left-0 md:left-12 z-20 p-4 glass rounded-full hover:bg-white/10 transition-colors"
+            >
               <motion.div
-                key={`${activeCategory}-${currentStyle.id}`}
-                initial={{ opacity: 0, x: 50, scale: 0.95 }}
-                animate={{ opacity: 1, x: 0, scale: 1 }}
-                exit={{ opacity: 0, x: -50, scale: 0.95 }}
-                transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                className="relative z-10 w-full md:w-1/2 h-[500px] group cursor-pointer"
-                onClick={() => setSelectedWork(currentStyle.name)}
+                key={leftClicks}
+                initial={{ color: "#ffffff", scale: 1, filter: "drop-shadow(0 0 0px #00ff00)" }}
+                animate={leftClicks > 0 ? { 
+                  color: ["#ffffff", "#00ff00", "#ffffff", "#808080", "#00ff00", "#ffffff", "#ffffff"],
+                  scale: [1, 1.6, 0.7, 1.4, 0.8, 1.2, 1],
+                  x: [0, -8, 8, -4, 4, -2, 0],
+                  y: [0, 4, -4, 2, -2, 1, 0],
+                  skewX: [0, 30, -30, 15, -15, 5, 0],
+                  opacity: [1, 0, 1, 0.2, 1, 0.5, 1],
+                  filter: [
+                    "drop-shadow(0 0 0px #00ff00)",
+                    "drop-shadow(0 0 40px #00ff00)",
+                    "drop-shadow(0 0 10px #ffffff)",
+                    "drop-shadow(0 0 50px #00ff00)",
+                    "drop-shadow(0 0 20px #808080)",
+                    "drop-shadow(0 0 30px #00ff00)",
+                    "drop-shadow(0 0 0px #00ff00)"
+                  ]
+                } : { color: "#ffffff" }}
+                transition={{ duration: 0.5, ease: "easeInOut" }}
               >
-                <motion.div 
-                  whileHover={{ y: -10 }}
-                  className="relative w-full h-full overflow-hidden rounded-3xl shadow-2xl shadow-black/50"
-                >
-                  <img 
-                    src={currentStyle.image} 
-                    alt={currentStyle.name}
-                    className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 scale-110 group-hover:scale-100"
-                    referrerPolicy="no-referrer"
-                  />
-                  
-                  {/* Product Info Overlay */}
-                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent p-8 pt-32">
-                    <p className="text-[10px] uppercase tracking-widest text-brand-green font-bold mb-1">{currentStyle.category}</p>
-                    <h3 className="text-3xl font-bold uppercase text-white">{currentStyle.name}</h3>
-                  </div>
-                </motion.div>
+                <ChevronLeft size={32} />
               </motion.div>
-            </AnimatePresence>
+            </button>
 
-            {/* Next Slide (Partial) */}
-            {filteredStyles.length > 1 && (
-              <div 
-                className="absolute right-0 w-1/3 h-[400px] opacity-30 scale-75 translate-x-1/2 cursor-pointer z-0 hidden md:block"
-                onClick={next}
+            <div className="flex items-center justify-center gap-4 md:gap-8 overflow-hidden w-full px-12 py-8">
+              {[-1, 0, 1].map((offset) => {
+                let index = (currentIndex + offset) % filteredStyles.length;
+                if (index < 0) index += filteredStyles.length;
+                const style = filteredStyles[index];
+                const isCenter = offset === 0;
+
+                if (!style) return null;
+
+                return (
+                  <button
+                    key={`${style.id}-${offset}`}
+                    onClick={() => {
+                      if (isCenter) {
+                        setSelectedId(style.id);
+                        setSelectedWork(style.name);
+                      } else if (offset === -1) {
+                        prev();
+                      } else {
+                        next();
+                      }
+                    }}
+                    className={cn(
+                      "relative flex flex-col items-center transition-all duration-500",
+                      isCenter ? "w-64 md:w-80 opacity-100 scale-110 z-10" : "w-40 md:w-56 opacity-30 scale-90 blur-[2px] hidden sm:flex",
+                      isCenter && selectedId === style.id ? "ring-2 ring-brand-green ring-offset-4 ring-offset-black rounded-3xl" : ""
+                    )}
+                  >
+                    <div className="relative w-full aspect-[4/5] rounded-3xl overflow-hidden bg-black group">
+                      <img 
+                        src={style.image} 
+                        alt={style.name}
+                        className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700"
+                        referrerPolicy="no-referrer"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent pointer-events-none" />
+                      
+                      {isCenter && (
+                        <div className="absolute bottom-0 left-0 right-0 p-6 text-center z-20">
+                          <p className="text-[10px] uppercase tracking-widest text-brand-green font-bold mb-2">{style.category}</p>
+                          <h3 className="text-xl md:text-2xl font-bold uppercase text-white">{style.name}</h3>
+                        </div>
+                      )}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+
+            <button 
+              onClick={next}
+              className="absolute right-0 md:right-12 z-20 p-4 glass rounded-full hover:bg-white/10 transition-colors"
+            >
+              <motion.div
+                key={rightClicks}
+                initial={{ color: "#ffffff", scale: 1, filter: "drop-shadow(0 0 0px #00ff00)" }}
+                animate={rightClicks > 0 ? { 
+                  color: ["#ffffff", "#00ff00", "#ffffff", "#808080", "#00ff00", "#ffffff", "#ffffff"],
+                  scale: [1, 1.6, 0.7, 1.4, 0.8, 1.2, 1],
+                  x: [0, 8, -8, 4, -4, 2, 0],
+                  y: [0, 4, -4, 2, -2, 1, 0],
+                  skewX: [0, -30, 30, -15, 15, -5, 0],
+                  opacity: [1, 0, 1, 0.2, 1, 0.5, 1],
+                  filter: [
+                    "drop-shadow(0 0 0px #00ff00)",
+                    "drop-shadow(0 0 40px #00ff00)",
+                    "drop-shadow(0 0 10px #ffffff)",
+                    "drop-shadow(0 0 50px #00ff00)",
+                    "drop-shadow(0 0 20px #808080)",
+                    "drop-shadow(0 0 30px #00ff00)",
+                    "drop-shadow(0 0 0px #00ff00)"
+                  ]
+                } : { color: "#ffffff" }}
+                transition={{ duration: 0.5, ease: "easeInOut" }}
               >
-                <img src={filteredStyles[getSlideIndex(1)].image} alt="Next" className="w-full h-full object-cover rounded-3xl grayscale transition-all duration-700" referrerPolicy="no-referrer" />
-              </div>
-            )}
+                <ChevronRight size={32} />
+              </motion.div>
+            </button>
           </div>
         )}
       </div>

@@ -105,7 +105,7 @@ export default function Hero() {
           {/* Buttons removed per request */}
         </motion.div>
 
-        <div className="mt-24 w-full max-w-5xl mx-auto overflow-hidden slider-mask pt-12 border-t border-white/10">
+        <div className="mt-24 w-full max-w-5xl mx-auto overflow-hidden slider-mask pt-12">
           <div className="flex animate-slide hover:[animation-play-state:paused]">
             {[
               { icon: Scissors, label: "Precision Cuts" },

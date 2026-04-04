@@ -127,9 +127,12 @@ export default function Merchandise() {
   const [activeTab, setActiveTab] = useState<'Goods' | 'Swag'>('Goods');
   const [activeCategory, setActiveCategory] = useState<string>('All');
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [leftClicks, setLeftClicks] = useState(0);
+  const [rightClicks, setRightClicks] = useState(0);
   const [selectedSize, setSelectedSize] = useState<string>('');
   const [selectedColor, setSelectedColor] = useState<string>('');
   const [quantity, setQuantity] = useState(1);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const goodsCategories = ['All', 'Hair', 'Skin', 'Accessories'];
   const swagCategories = ['All', 'Hats', 'Tees', 'Jackets', 'Hoodies', 'Mugs'];
@@ -142,14 +145,18 @@ export default function Merchandise() {
 
   const nextSlide = () => {
     if (filteredProducts.length === 0) return;
+    setRightClicks(c => c + 1);
     setCurrentIndex((prev) => (prev + 1) % filteredProducts.length);
     resetSelections();
+    setSelectedId(null);
   };
 
   const prevSlide = () => {
     if (filteredProducts.length === 0) return;
+    setLeftClicks(c => c + 1);
     setCurrentIndex((prev) => (prev - 1 + filteredProducts.length) % filteredProducts.length);
     resetSelections();
+    setSelectedId(null);
   };
 
   const resetSelections = () => {
@@ -240,7 +247,7 @@ export default function Merchandise() {
           </div>
 
           {/* Subcategories */}
-          <div className="flex flex-wrap justify-center gap-2">
+          <div className="flex flex-wrap justify-center gap-2 mb-8">
             {(activeTab === 'Goods' ? goodsCategories : swagCategories).map(category => (
               <button
                 key={category}
@@ -256,24 +263,6 @@ export default function Merchandise() {
               </button>
             ))}
           </div>
-
-          {/* Controls (Arrows) */}
-          {filteredProducts.length > 1 && (
-            <div className="flex justify-center gap-8 mt-4">
-              <button 
-                onClick={prevSlide} 
-                className="flex items-center justify-center text-white/50 hover:text-brand-green transition-colors"
-              >
-                <ChevronLeft size={32} />
-              </button>
-              <button 
-                onClick={nextSlide} 
-                className="flex items-center justify-center text-white/50 hover:text-brand-green transition-colors"
-              >
-                <ChevronRight size={32} />
-              </button>
-            </div>
-          )}
         </div>
 
         {filteredProducts.length === 0 ? (
@@ -283,69 +272,120 @@ export default function Merchandise() {
         ) : (
           <>
             {/* Slider Area */}
-            <div className="relative h-[600px] flex items-center justify-center mb-12">
-              
-              {/* Previous Slide (Partial) */}
-              {filteredProducts.length > 1 && (
-                <div 
-                  className="absolute left-0 w-1/3 h-[400px] opacity-30 scale-75 -translate-x-1/2 cursor-pointer z-0 hidden md:block"
-                  onClick={prevSlide}
+            <div className="relative w-full max-w-5xl mx-auto flex items-center justify-center py-12 mb-12">
+              <button 
+                onClick={prevSlide}
+                className="absolute left-0 md:left-12 z-20 p-4 glass rounded-full hover:bg-white/10 transition-colors"
+              >
+                <motion.div
+                  key={leftClicks}
+                  initial={{ color: "#ffffff", scale: 1, filter: "drop-shadow(0 0 0px #00ff00)" }}
+                  animate={leftClicks > 0 ? { 
+                    color: ["#ffffff", "#00ff00", "#ffffff", "#808080", "#00ff00", "#ffffff", "#ffffff"],
+                    scale: [1, 1.6, 0.7, 1.4, 0.8, 1.2, 1],
+                    x: [0, -8, 8, -4, 4, -2, 0],
+                    y: [0, 4, -4, 2, -2, 1, 0],
+                    skewX: [0, 30, -30, 15, -15, 5, 0],
+                    opacity: [1, 0, 1, 0.2, 1, 0.5, 1],
+                    filter: [
+                      "drop-shadow(0 0 0px #00ff00)",
+                      "drop-shadow(0 0 40px #00ff00)",
+                      "drop-shadow(0 0 10px #ffffff)",
+                      "drop-shadow(0 0 50px #00ff00)",
+                      "drop-shadow(0 0 20px #808080)",
+                      "drop-shadow(0 0 30px #00ff00)",
+                      "drop-shadow(0 0 0px #00ff00)"
+                    ]
+                  } : { color: "#ffffff" }}
+                  transition={{ duration: 0.5, ease: "easeInOut" }}
                 >
-                  <img src={filteredProducts[getSlideIndex(-1)].image} alt="Previous" className="w-full h-full object-cover rounded-3xl grayscale transition-all duration-700" referrerPolicy="no-referrer" />
-                </div>
-              )}
-
-              {/* Current Slide */}
-              <AnimatePresence mode="wait">
-                <motion.div 
-                  key={`${activeTab}-${activeCategory}-${currentIndex}`}
-                  initial={{ opacity: 0, x: 50, scale: 0.95 }}
-                  animate={{ opacity: 1, x: 0, scale: 1 }}
-                  exit={{ opacity: 0, x: -50, scale: 0.95 }}
-                  transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                  className="relative z-10 w-full md:w-1/2 h-[500px] glass rounded-3xl overflow-hidden shadow-2xl shadow-black/50"
-                >
-                  <img src={currentProduct.image} alt={currentProduct.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-                  
-                  {/* Product Info Overlay */}
-                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent p-8 pt-32">
-                     <div className="flex justify-between items-end mb-4">
-                       <div>
-                         <p className="text-[10px] uppercase tracking-widest text-brand-green font-bold mb-1">{currentProduct.category}</p>
-                         <h3 className="text-3xl font-bold uppercase">{currentProduct.name}</h3>
-                       </div>
-                       <span className="text-3xl font-bold text-brand-green">${currentProduct.price}</span>
-                     </div>
-                  </div>
+                  <ChevronLeft size={32} />
                 </motion.div>
-              </AnimatePresence>
+              </button>
 
-              {/* Next Slide (Partial) */}
-              {filteredProducts.length > 1 && (
-                <div 
-                  className="absolute right-0 w-1/3 h-[400px] opacity-30 scale-75 translate-x-1/2 cursor-pointer z-0 hidden md:block"
-                  onClick={nextSlide}
-                >
-                  <img src={filteredProducts[getSlideIndex(1)].image} alt="Next" className="w-full h-full object-cover rounded-3xl grayscale transition-all duration-700" referrerPolicy="no-referrer" />
-                </div>
-              )}
-            </div>
+              <div className="flex items-center justify-center gap-4 md:gap-8 overflow-hidden w-full px-12 py-8">
+                {[-1, 0, 1].map((offset) => {
+                  let index = (currentIndex + offset) % filteredProducts.length;
+                  if (index < 0) index += filteredProducts.length;
+                  const product = filteredProducts[index];
+                  const isCenter = offset === 0;
 
-            {/* Pagination Dots */}
-            {filteredProducts.length > 1 && (
-              <div className="flex justify-center gap-4 mb-12">
-                {filteredProducts.map((_, idx) => (
-                  <button 
-                    key={idx}
-                    onClick={() => { setCurrentIndex(idx); resetSelections(); }}
-                    className={cn(
-                      "h-2 rounded-full transition-all",
-                      idx === currentIndex ? "w-8 bg-brand-green" : "w-2 bg-white/20 hover:bg-white/50"
-                    )}
-                  />
-                ))}
+                  if (!product) return null;
+
+                  return (
+                    <button
+                      key={`${product.id}-${offset}`}
+                      onClick={() => {
+                        if (isCenter) {
+                          setSelectedId(product.id);
+                        } else if (offset === -1) {
+                          prevSlide();
+                        } else if (offset === 1) {
+                          nextSlide();
+                        }
+                      }}
+                      className={cn(
+                        "relative flex flex-col items-center transition-all duration-500",
+                        isCenter ? "w-64 md:w-80 opacity-100 scale-110 z-10" : "w-40 md:w-56 opacity-30 scale-90 blur-[2px] hidden sm:flex",
+                        isCenter && selectedId === product.id ? "ring-2 ring-brand-green ring-offset-4 ring-offset-black rounded-3xl" : ""
+                      )}
+                    >
+                      <div className="relative w-full aspect-[4/5] rounded-3xl overflow-hidden bg-black group">
+                        <img 
+                          src={product.image} 
+                          alt={product.name}
+                          className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700"
+                          referrerPolicy="no-referrer"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent pointer-events-none" />
+                        
+                        {isCenter && (
+                          <div className="absolute bottom-0 left-0 right-0 p-6 text-left z-20">
+                            <div className="flex justify-between items-end">
+                              <div>
+                                <p className="text-[10px] uppercase tracking-widest text-brand-green font-bold mb-1">{product.category}</p>
+                                <h3 className="text-xl md:text-2xl font-bold uppercase text-white">{product.name}</h3>
+                              </div>
+                              <span className="text-2xl font-bold text-brand-green">${product.price}</span>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
-            )}
+
+              <button 
+                onClick={nextSlide}
+                className="absolute right-0 md:right-12 z-20 p-4 glass rounded-full hover:bg-white/10 transition-colors"
+              >
+                <motion.div
+                  key={rightClicks}
+                  initial={{ color: "#ffffff", scale: 1, filter: "drop-shadow(0 0 0px #00ff00)" }}
+                  animate={rightClicks > 0 ? { 
+                    color: ["#ffffff", "#00ff00", "#ffffff", "#808080", "#00ff00", "#ffffff", "#ffffff"],
+                    scale: [1, 1.6, 0.7, 1.4, 0.8, 1.2, 1],
+                    x: [0, 8, -8, 4, -4, 2, 0],
+                    y: [0, 4, -4, 2, -2, 1, 0],
+                    skewX: [0, -30, 30, -15, 15, -5, 0],
+                    opacity: [1, 0, 1, 0.2, 1, 0.5, 1],
+                    filter: [
+                      "drop-shadow(0 0 0px #00ff00)",
+                      "drop-shadow(0 0 40px #00ff00)",
+                      "drop-shadow(0 0 10px #ffffff)",
+                      "drop-shadow(0 0 50px #00ff00)",
+                      "drop-shadow(0 0 20px #808080)",
+                      "drop-shadow(0 0 30px #00ff00)",
+                      "drop-shadow(0 0 0px #00ff00)"
+                    ]
+                  } : { color: "#ffffff" }}
+                  transition={{ duration: 0.5, ease: "easeInOut" }}
+                >
+                  <ChevronRight size={32} />
+                </motion.div>
+              </button>
+            </div>
 
             {/* Options & Add to Cart */}
             <div className="max-w-3xl mx-auto glass p-8 rounded-3xl border-white/5">
