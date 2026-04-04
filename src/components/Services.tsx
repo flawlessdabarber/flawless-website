@@ -447,17 +447,36 @@ export default function Services() {
                 const isSelected = state.date === dateStr;
                 const isSundayDate = date.getDay() === 0;
                 const isPastDate = dateStr < todayStr;
+                const isToday = dateStr === todayStr;
+                
                 return (
-                  <button
+                  <motion.button
                     key={i}
                     onClick={() => !isPastDate && setDate(dateStr)}
                     disabled={isPastDate}
+                    animate={isSelected ? {
+                      boxShadow: ["0px 0px 10px rgba(155,155,155,0.3)", "0px 0px 30px rgba(155,155,155,0.8)", "0px 0px 10px rgba(155,155,155,0.3)"],
+                      scale: [1, 1.05, 1],
+                      opacity: [0.8, 1, 0.8]
+                    } : {
+                      boxShadow: "0px 0px 0px rgba(155,155,155,0)",
+                      scale: 1,
+                      opacity: 1
+                    }}
+                    transition={isSelected ? {
+                      duration: 1.5,
+                      repeat: Infinity,
+                      ease: "easeInOut"
+                    } : {
+                      duration: 0.3
+                    }}
                     className={cn(
-                      "flex-shrink-0 w-24 h-28 rounded-2xl flex flex-col items-center justify-center gap-1 transition-all relative overflow-hidden",
-                      isSelected ? "bg-brand-green text-black" : "glass",
+                      "flex-shrink-0 w-24 h-28 rounded-2xl flex flex-col items-center justify-center gap-1 transition-all relative overflow-hidden border",
+                      isSelected ? "glass border-white/40 bg-white/5" : "glass border-white/10",
                       !isPastDate && !isSelected && "hover:bg-white/10",
                       isPastDate && "opacity-40 bg-red-950/20 border-red-900/30 text-red-500/70 cursor-not-allowed",
-                      isSundayDate && !isSelected && !isPastDate && "opacity-30 grayscale"
+                      isSundayDate && !isSelected && !isPastDate && "opacity-30 grayscale",
+                      isToday && "border-2 border-brand-green"
                     )}
                   >
                     {isSundayDate && (
@@ -465,16 +484,35 @@ export default function Services() {
                         SUN
                       </span>
                     )}
-                    <span className="text-[10px] uppercase tracking-widest opacity-60">
+                    {isToday && (
+                      <span className="absolute top-1 left-1 text-[8px] uppercase tracking-tighter font-bold text-brand-green">
+                        TODAY
+                      </span>
+                    )}
+                    <span className={cn("text-[10px] uppercase tracking-widest", isSelected ? "text-white opacity-100 font-bold" : "opacity-60")}>
                       {date.toLocaleDateString('en-US', { weekday: 'short' })}
                     </span>
-                    <span className="text-2xl font-bold">
-                      {date.getDate()}
-                    </span>
-                    <span className="text-[10px] uppercase tracking-widest opacity-60">
+                    {isToday ? (
+                      <motion.span 
+                        animate={{ 
+                          opacity: [0.5, 1, 0.5],
+                          textShadow: ["0px 0px 5px rgba(0,255,0,0.5)", "0px 0px 20px rgba(0,255,0,1)", "0px 0px 5px rgba(0,255,0,0.5)"],
+                          scale: [1, 1.1, 1]
+                        }}
+                        transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                        className="text-2xl font-bold text-brand-green"
+                      >
+                        {date.getDate()}
+                      </motion.span>
+                    ) : (
+                      <span className={cn("text-2xl font-bold", isSelected ? "text-brand-green" : "")}>
+                        {date.getDate()}
+                      </span>
+                    )}
+                    <span className={cn("text-[10px] uppercase tracking-widest", isSelected ? "text-white opacity-100 font-bold" : "opacity-60")}>
                       {date.toLocaleDateString('en-US', { month: 'short' })}
                     </span>
-                  </button>
+                  </motion.button>
                 );
               })}
             </div>
