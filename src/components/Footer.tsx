@@ -1,12 +1,15 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Instagram, Twitter, Facebook, Youtube } from 'lucide-react';
+import FooterMap from './FooterMap';
 
 export default function Footer() {
   return (
     <footer className="bg-black border-t border-white/10 pt-24 pb-12">
       <div className="container mx-auto px-6">
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-12 mb-24">
+        <FooterMap />
+        
+        <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-12 mb-24">
           <div className="lg:col-span-2">
             <Link to="/" className="text-3xl font-bold uppercase tracking-tighter flex items-center gap-2 mb-8">
               <div className="w-10 h-10 bg-brand-green rounded-full flex items-center justify-center text-black text-sm">F</div>
@@ -38,6 +41,15 @@ export default function Footer() {
               <li><Link to="/legal" className="hover:text-brand-green transition-colors">Privacy Policy</Link></li>
               <li><Link to="/legal" className="hover:text-brand-green transition-colors">Terms of Service</Link></li>
               <li><Link to="/legal" className="hover:text-brand-green transition-colors">Refund Policy</Link></li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="text-[10px] uppercase tracking-[0.3em] font-bold text-brand-green mb-8">Access</h4>
+            <ul className="space-y-4 text-sm uppercase tracking-widest font-bold">
+              <li><Link to="/admin" className="hover:text-brand-green transition-colors">Admin</Link></li>
+              <li><Link to="/barber" className="hover:text-brand-green transition-colors">Barber</Link></li>
+              <li><Link to="/member" className="hover:text-brand-green transition-colors">Member</Link></li>
             </ul>
           </div>
         </div>
