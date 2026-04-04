@@ -413,7 +413,7 @@ export default function Services() {
               >
                 <ChevronLeft size={20} />
               </button>
-              <div className="flex-1 glass py-4 rounded-2xl text-center font-bold uppercase tracking-widest">
+              <div className={cn("flex-1 glass py-4 rounded-2xl text-center font-bold uppercase tracking-widest transition-colors", state.selectedMonth === currentMonth ? "text-brand-green border border-brand-green/30 shadow-[0_0_15px_rgba(0,255,0,0.1)]" : "")}>
                 {months[state.selectedMonth]}
               </div>
               <button 
@@ -533,26 +533,34 @@ export default function Services() {
                 const reserved = reservedTimes.includes(time);
                 const disabled = past || reserved;
 
+                const firstAvailableTime = state.date === todayStr ? timeSlots.find(t => !isPastTime(t) && !reservedTimes.includes(t)) : null;
+                const isCurrentTimeComingUp = time === firstAvailableTime;
+
                 return (
                   <button
                     key={i}
                     onClick={() => !disabled && setTime(time)}
                     disabled={disabled}
                     className={cn(
-                      "py-4 rounded-xl font-bold text-sm transition-all relative overflow-hidden flex flex-col items-center justify-center",
-                      isSelected ? "bg-brand-green text-black" : "glass",
+                      "py-4 rounded-xl font-bold text-sm transition-all relative overflow-hidden flex flex-col items-center justify-center border",
+                      isSelected ? "bg-brand-green text-black border-brand-green" : "glass border-white/10",
                       !disabled && !isSelected && "hover:bg-white/10",
                       past && !reserved && "opacity-40 bg-red-950/20 border-red-900/30 text-red-500/70 cursor-not-allowed",
-                      reserved && "opacity-40 bg-white/5 border-white/10 text-white/40 cursor-not-allowed",
-                      overtime && !isSelected && !disabled && "opacity-30 grayscale"
+                      reserved && "border-red-900/50 cursor-not-allowed",
+                      overtime && !isSelected && !disabled && "opacity-30 grayscale",
+                      isCurrentTimeComingUp && !isSelected && "border-brand-green text-brand-green shadow-[0_0_15px_rgba(0,255,0,0.2)]"
                     )}
                   >
-                    {time}
+                    <span className={cn("relative z-10", reserved && "opacity-0")}>{time}</span>
+                    
                     {reserved && (
-                      <span className="text-[8px] uppercase tracking-widest mt-1 text-white/50">Taken</span>
+                      <div className="absolute inset-0 bg-red-600/80 flex items-center justify-center z-20 backdrop-blur-sm">
+                        <span className="text-white font-bold uppercase tracking-widest text-xs drop-shadow-md">Taken</span>
+                      </div>
                     )}
+                    
                     {overtime && !reserved && (
-                      <span className="absolute top-1 right-1 text-[8px] uppercase tracking-tighter opacity-50">
+                      <span className="absolute top-1 right-1 text-[8px] uppercase tracking-tighter opacity-50 z-10">
                         OT
                       </span>
                     )}

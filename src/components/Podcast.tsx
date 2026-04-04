@@ -77,7 +77,6 @@ export default function Podcast() {
             <h2 className="text-5xl md:text-7xl font-bold uppercase tracking-tighter leading-none mb-4">FDB <br /> Live</h2>
             
             <div className="font-bold uppercase tracking-widest text-sm mb-6">
-              <span className="text-gray-400">Showtimes</span>{' '}
               <span className={nextDay === 0 ? "text-brand-green animate-pulse drop-shadow-[0_0_20px_rgba(0,255,0,0.8)] brightness-150" : "text-gray-600"}>Sun</span> <span className="text-gray-600">|</span>{' '}
               <span className={nextDay === 2 ? "text-brand-green animate-pulse drop-shadow-[0_0_20px_rgba(0,255,0,0.8)] brightness-150" : "text-gray-600"}>Tue</span> <span className="text-gray-600">|</span>{' '}
               <span className={nextDay === 4 ? "text-brand-green animate-pulse drop-shadow-[0_0_20px_rgba(0,255,0,0.8)] brightness-150" : "text-gray-600"}>Thurs</span> <span className="text-gray-600">|</span>{' '}
@@ -89,9 +88,6 @@ export default function Podcast() {
               <p className="text-3xl font-mono font-bold text-brand-green">{timeLeft || "Loading..."}</p>
             </div>
 
-            <p className="text-white/60 mb-8 text-lg leading-relaxed max-w-2xl mx-auto lg:mx-0">
-              Dive into the minds of industry leaders, entrepreneurs, and cultural icons. We discuss everything from grooming trends to investment strategies and community growth.
-            </p>
             <div className="flex flex-wrap gap-4 justify-center lg:justify-start">
               <button 
                 onClick={() => setSelectedPodcast('Text Reminder Request')}
@@ -129,12 +125,12 @@ export default function Podcast() {
             <motion.div 
               animate={{ y: [0, -20, 0] }}
               transition={{ duration: 4, repeat: Infinity }}
-              className="absolute -bottom-10 -left-10 glass p-6 rounded-2xl max-w-xs shadow-2xl"
+              className="absolute -bottom-10 left-1/2 -translate-x-1/2 glass p-6 rounded-2xl w-11/12 max-w-sm shadow-2xl flex flex-col items-center text-center"
             >
               <p className="text-brand-green text-[10px] font-bold uppercase tracking-widest mb-2">Latest Episode</p>
               <h4 className="font-bold mb-2">Building a Grooming Empire with Flawless</h4>
               <p className="text-xs text-white/50 mb-4">Episode 42 • 45 mins</p>
-              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-tighter cursor-pointer hover:text-brand-green">
+              <div className="flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-tighter cursor-pointer hover:text-brand-green">
                 View Show Notes <ExternalLink size={12} />
               </div>
             </motion.div>
