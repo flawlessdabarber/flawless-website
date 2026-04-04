@@ -135,14 +135,31 @@ export function AIProvider({ children }: { children: ReactNode }) {
         ? cartItems.map(item => `${item.quantity}x ${item.name} (${item.size || 'N/A'}, ${item.color || 'N/A'})`).join(', ')
         : 'Empty';
 
+      const getReservedTimes = (dateStr: string) => {
+        const hash = dateStr.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+        const reserved = [];
+        if (hash % 2 === 0) reserved.push('10:00 AM');
+        if (hash % 3 === 0) reserved.push('2:00 PM');
+        if (hash % 4 === 0) reserved.push('4:00 PM');
+        if (hash % 5 === 0) reserved.push('7:00 PM');
+        return reserved;
+      };
+      
+      const reservedTimesText = bookingState.date 
+        ? getReservedTimes(bookingState.date).join(', ') || 'None'
+        : 'Select a date to see reserved times';
+
       const siteContext = `
         User's Current Selections:
         - Services: ${selectedServicesText}
         - Total Price: $${totalPrice}
         - Location: ${bookingState.locationType}
         - Client Type: ${bookingState.clientType}
+        - Age Group: ${bookingState.ageGroup}
+        - Member ID: ${bookingState.memberId || 'N/A'}
         - Date: ${bookingState.date || 'Not selected'}
         - Time: ${bookingState.time || 'Not selected'}
+        - Reserved Times for Selected Date: ${reservedTimesText}
         - Mobile Address: ${bookingState.address || 'Not provided'}
         - Selected Event: ${selectedEvent || 'None'}
         - Selected Product: ${selectedProduct || 'None'}
@@ -160,6 +177,17 @@ export function AIProvider({ children }: { children: ReactNode }) {
           systemInstruction: `You are the Flawless Da Barber AI Concierge. 
           You are synced with all sections of the website:
           - BOOKING: Help clients book hair/skin services (In-Store, Mobile Visit, Walk-in/Member). Explain pricing (Overtime, Sunday fees). Note: Hair Cuts, High Profile Clientele, Urban Style, and Hair Style are mutually exclusive base services.
+          
+          CRITICAL BOOKING RULES:
+          1. You are aware of confirmed reservations. DO NOT double book any appointments. If a user requests a time that is in the "Reserved Times for Selected Date" list, inform them it is already taken by another client and suggest an available time.
+          2. PRICING & FEES: The Overtime (OT fee) is ONE charge, and the Sunday Day Off Fee (DOF) is ANOTHER charge. These are added together with the services price to form ONE single total payment. Make sure the client understands this fee structure.
+          3. OVERTIME FEE STRUCTURE: 
+             - 10pm & 9am: $50 adult, $25 kids
+             - 11pm & 8am: $100 adult, $50 kids
+             - 12am & 7am: $200 adult, $100 kids
+          4. MEMBER PRICING: If the client is a Member, Hair Cuts, Hair Styles, and Urban Styles are $0. A 6-character Member ID is generated and displayed.
+          5. MOBILE VISITS: Mobile visits force the 'Walk-in' client type. Members cannot use member pricing for mobile visits. Mobile visit pricing: Adults (Hair Cuts $250, Hair Styles $300, Urban Style $450), Kids (Hair Cuts $150, Hair Styles $200, Urban Style $325).
+
           - EVENTS: Provide info on upcoming events like the Grooming Workshop or Summer Bash.
           - PODCAST: Talk about "FDB Live" and the YouTube Channel.
           - MEMBERSHIPS: Explain monthly plans (Kids, Adults, Corporate, Investment).

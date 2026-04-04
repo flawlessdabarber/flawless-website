@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Scissors, Sparkles, MapPin, Store, Zap, Wind, Palette, Calendar as CalendarIcon, Clock, Check, Layers, ChevronLeft, ChevronRight, ShieldCheck } from 'lucide-react';
+import { Scissors, Sparkles, MapPin, Store, Zap, Wind, Palette, Calendar as CalendarIcon, Clock, Check, Layers, ChevronLeft, ChevronRight, ShieldCheck, Baby, User } from 'lucide-react';
 import { useBooking, Service } from '../lib/BookingContext';
 import { cn } from '../lib/utils';
 
@@ -58,7 +58,7 @@ const months = [
 ];
 
 export default function Services() {
-  const { state, toggleService, setLocationType, setClientType, setDate, setTime, setAddress, setMonth, totalPrice, isOvertime, isSunday, isDayOffFee } = useBooking();
+  const { state, toggleService, setLocationType, setClientType, setAgeGroup, setDate, setTime, setAddress, setMonth, totalPrice, isOvertime, isSunday, isDayOffFee, otFee } = useBooking();
   
   const now = new Date();
   const currentMonth = now.getMonth();
@@ -129,7 +129,7 @@ export default function Services() {
     const hour = parseInt(time.split(':')[0]);
     const isPM = time.includes('PM');
     const actualHour = isPM ? (hour === 12 ? 12 : hour + 12) : (hour === 12 ? 0 : hour);
-    return (actualHour >= 7 && actualHour < 9) || (actualHour >= 22 || actualHour === 0);
+    return [7, 8, 9, 22, 23, 0].includes(actualHour);
   };
 
   return (
@@ -140,12 +140,12 @@ export default function Services() {
             <span className="text-brand-green font-mono text-xs tracking-widest uppercase mb-4 block">Our Expertise</span>
             <h2 className="text-5xl md:text-7xl font-bold uppercase tracking-tighter">Book a <br /> Reservation</h2>
           </div>
-          <div className="flex flex-col gap-4">
-            <div className="flex flex-wrap gap-4">
+          <div className="flex flex-wrap gap-4 md:gap-8">
+            <div className="flex flex-col gap-4">
               <button 
                 onClick={() => setLocationType('in-store')}
                 className={cn(
-                  "glass px-6 py-4 rounded-xl flex items-center gap-3 transition-all relative overflow-hidden",
+                  "glass px-6 py-4 rounded-xl flex items-center gap-3 transition-all relative overflow-hidden w-48",
                   state.locationType === 'in-store' ? "border-brand-green bg-brand-green/20 shadow-[0_0_20px_rgba(0,255,0,0.2)]" : "opacity-50 hover:opacity-100"
                 )}
               >
@@ -164,7 +164,7 @@ export default function Services() {
               <button 
                 onClick={() => setLocationType('mobile')}
                 className={cn(
-                  "glass px-6 py-4 rounded-xl flex items-center gap-3 transition-all relative overflow-hidden",
+                  "glass px-6 py-4 rounded-xl flex items-center gap-3 transition-all relative overflow-hidden w-48",
                   state.locationType === 'mobile' ? "border-brand-green bg-brand-green/20 shadow-[0_0_20px_rgba(0,255,0,0.2)]" : "opacity-50 hover:opacity-100"
                 )}
               >
@@ -182,11 +182,35 @@ export default function Services() {
               </button>
             </div>
 
-            <div className="flex flex-wrap gap-4">
+            <div className="flex flex-col gap-4">
+              <button 
+                onClick={() => state.locationType !== 'mobile' && setClientType('member')}
+                disabled={state.locationType === 'mobile'}
+                className={cn(
+                  "glass px-6 py-4 rounded-xl flex items-center gap-3 transition-all relative overflow-hidden w-48",
+                  state.locationType === 'mobile' 
+                    ? "opacity-40 bg-red-950/20 border-red-900/30 text-red-500/70 cursor-not-allowed" 
+                    : state.clientType === 'member' 
+                      ? "border-brand-green bg-brand-green/20 shadow-[0_0_20px_rgba(0,255,0,0.2)]" 
+                      : "opacity-50 hover:opacity-100"
+                )}
+              >
+                {state.clientType === 'member' && (
+                  <motion.div 
+                    layoutId="active-client-glow"
+                    className="absolute inset-0 bg-brand-green/5 animate-pulse"
+                  />
+                )}
+                <Zap className={cn(state.clientType === 'member' ? "text-brand-green" : "text-white")} size={24} />
+                <div className="text-left relative z-10">
+                  <p className="text-[10px] uppercase tracking-widest opacity-50">Client Type</p>
+                  <p className="text-sm font-bold">Member</p>
+                </div>
+              </button>
               <button 
                 onClick={() => setClientType('walk-in')}
                 className={cn(
-                  "glass px-6 py-4 rounded-xl flex items-center gap-3 transition-all relative overflow-hidden",
+                  "glass px-6 py-4 rounded-xl flex items-center gap-3 transition-all relative overflow-hidden w-48",
                   state.clientType === 'walk-in' ? "border-brand-green bg-brand-green/20 shadow-[0_0_20px_rgba(0,255,0,0.2)]" : "opacity-50 hover:opacity-100"
                 )}
               >
@@ -202,23 +226,45 @@ export default function Services() {
                   <p className="text-sm font-bold">Walk-in</p>
                 </div>
               </button>
+            </div>
+
+            <div className="flex flex-col gap-4">
               <button 
-                onClick={() => setClientType('member')}
+                onClick={() => setAgeGroup('kids')}
                 className={cn(
-                  "glass px-6 py-4 rounded-xl flex items-center gap-3 transition-all relative overflow-hidden",
-                  state.clientType === 'member' ? "border-brand-green bg-brand-green/20 shadow-[0_0_20px_rgba(0,255,0,0.2)]" : "opacity-50 hover:opacity-100"
+                  "glass px-6 py-4 rounded-xl flex items-center gap-3 transition-all relative overflow-hidden w-48",
+                  state.ageGroup === 'kids' ? "border-brand-green bg-brand-green/20 shadow-[0_0_20px_rgba(0,255,0,0.2)]" : "opacity-50 hover:opacity-100"
                 )}
               >
-                {state.clientType === 'member' && (
+                {state.ageGroup === 'kids' && (
                   <motion.div 
-                    layoutId="active-client-glow"
+                    layoutId="active-age-glow"
                     className="absolute inset-0 bg-brand-green/5 animate-pulse"
                   />
                 )}
-                <Zap className={cn(state.clientType === 'member' ? "text-brand-green" : "text-white")} size={24} />
+                <Baby className={cn(state.ageGroup === 'kids' ? "text-brand-green" : "text-white")} size={24} />
                 <div className="text-left relative z-10">
-                  <p className="text-[10px] uppercase tracking-widest opacity-50">Client Type</p>
-                  <p className="text-sm font-bold">Member</p>
+                  <p className="text-[10px] uppercase tracking-widest opacity-50">Age Group</p>
+                  <p className="text-sm font-bold">Kids</p>
+                </div>
+              </button>
+              <button 
+                onClick={() => setAgeGroup('adults')}
+                className={cn(
+                  "glass px-6 py-4 rounded-xl flex items-center gap-3 transition-all relative overflow-hidden w-48",
+                  state.ageGroup === 'adults' ? "border-brand-green bg-brand-green/20 shadow-[0_0_20px_rgba(0,255,0,0.2)]" : "opacity-50 hover:opacity-100"
+                )}
+              >
+                {state.ageGroup === 'adults' && (
+                  <motion.div 
+                    layoutId="active-age-glow"
+                    className="absolute inset-0 bg-brand-green/5 animate-pulse"
+                  />
+                )}
+                <User className={cn(state.ageGroup === 'adults' ? "text-brand-green" : "text-white")} size={24} />
+                <div className="text-left relative z-10">
+                  <p className="text-[10px] uppercase tracking-widest opacity-50">Age Group</p>
+                  <p className="text-sm font-bold">Adults</p>
                 </div>
               </button>
             </div>
@@ -285,11 +331,34 @@ export default function Services() {
                 </div>
                 <h3 className="text-2xl font-bold uppercase mb-2">{service.title}</h3>
                 <p className="text-white/40 text-sm mb-6 line-clamp-2">{service.description}</p>
-                <span className="text-xl font-bold text-brand-green">
-                  ${service.id === 'skin' 
-                    ? (state.locationType === 'mobile' ? 1000 : 500) 
-                    : service.price}
-                </span>
+                <div className="flex items-center justify-between">
+                  <span className="text-xl font-bold text-brand-green">
+                    {state.locationType === 'mobile' ? (
+                      service.id === 'hair' ? `$${state.ageGroup === 'kids' ? 150 : 250}` :
+                      service.id === 'hairstyle' ? `$${state.ageGroup === 'kids' ? 200 : 300}` :
+                      service.id === 'urban' ? `$${state.ageGroup === 'kids' ? 325 : 450}` :
+                      service.id === 'skin' ? '$1000' :
+                      `$${service.price}`
+                    ) : state.clientType === 'member' && ['hair', 'hairstyle', 'urban'].includes(service.id) ? (
+                      '$0'
+                    ) : service.id === 'hair' ? (
+                      `$${state.ageGroup === 'kids' ? 50 : 100}`
+                    ) : service.id === 'hairstyle' ? (
+                      `$${state.ageGroup === 'kids' ? 75 : 125}`
+                    ) : service.id === 'urban' ? (
+                      `$${state.ageGroup === 'kids' ? 100 : 150}`
+                    ) : service.id === 'skin' ? (
+                      '$500'
+                    ) : (
+                      `$${service.price}`
+                    )}
+                  </span>
+                  {isSelected && state.clientType === 'member' && ['hair', 'hairstyle', 'urban'].includes(service.id) && state.memberId && (
+                    <span className="text-[10px] uppercase tracking-widest text-brand-green border border-brand-green/30 px-2 py-1 rounded-md">
+                      ID: {state.memberId}
+                    </span>
+                  )}
+                </div>
               </motion.div>
             );
           })}
