@@ -16,8 +16,20 @@ const WeatherIcon = ({ code }: { code: number }) => {
         <motion.div
           animate={{ rotate: 360 }}
           transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
-          className="w-10 h-10 rounded-full bg-brand-green shadow-[0_0_20px_rgba(0,255,0,0.5)]"
-        />
+          className="absolute inset-0 flex items-center justify-center text-brand-green drop-shadow-[0_0_15px_rgba(0,255,0,0.8)]"
+        >
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="5" fill="currentColor" />
+            <line x1="12" y1="1" x2="12" y2="3" />
+            <line x1="12" y1="21" x2="12" y2="23" />
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+            <line x1="1" y1="12" x2="3" y2="12" />
+            <line x1="21" y1="12" x2="23" y2="12" />
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+          </svg>
+        </motion.div>
       )}
 
       {isCloudy && (
@@ -39,7 +51,7 @@ const WeatherIcon = ({ code }: { code: number }) => {
         <motion.div
           animate={{ opacity: [0, 1, 0, 1, 0] }}
           transition={{ duration: 1.5, repeat: Infinity, repeatDelay: 2 }}
-          className="absolute top-6 left-6 z-20"
+          className="absolute top-6 left-6 z-20 drop-shadow-[0_0_10px_rgba(0,255,0,0.8)]"
         >
           <svg width="16" height="24" viewBox="0 0 20 28" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M11 2L2 15H9L8 26L17 13H10L11 2Z" fill="#00FF00" stroke="#00FF00" strokeWidth="1" strokeLinejoin="round" />
@@ -77,25 +89,29 @@ const WeatherIcon = ({ code }: { code: number }) => {
 };
 
 const WeatherWidget = () => {
-  const [weather, setWeather] = useState<{ temp: number, code: number, desc: string } | null>(null);
+  const [weather, setWeather] = useState<{ temp: number, code: number, desc: string } | null>({ temp: 72, code: 0, desc: 'Clear' });
 
   useEffect(() => {
     // Fetch real-time weather for Times Square (40.7554, -73.9904)
     fetch('https://api.open-meteo.com/v1/forecast?latitude=40.7554&longitude=-73.9904&current=temperature_2m,weather_code&temperature_unit=fahrenheit')
       .then(res => res.json())
       .then(data => {
-        const temp = Math.round(data.current.temperature_2m);
-        const code = data.current.weather_code;
-        let desc = 'Clear';
-        if (code >= 1 && code <= 3) desc = 'Cloudy';
-        if (code >= 45 && code <= 48) desc = 'Fog';
-        if (code >= 51 && code <= 67) desc = 'Rain';
-        if (code >= 71 && code <= 82) desc = 'Snow';
-        if (code >= 80 && code <= 82) desc = 'Showers';
-        if (code >= 95) desc = 'Thunderstorms';
-        setWeather({ temp, code, desc });
+        if (data && data.current) {
+          const temp = Math.round(data.current.temperature_2m);
+          const code = data.current.weather_code;
+          let desc = 'Clear';
+          if (code >= 1 && code <= 3) desc = 'Cloudy';
+          if (code >= 45 && code <= 48) desc = 'Fog';
+          if (code >= 51 && code <= 67) desc = 'Rain';
+          if (code >= 71 && code <= 82) desc = 'Snow';
+          if (code >= 80 && code <= 82) desc = 'Showers';
+          if (code >= 95) desc = 'Thunderstorms';
+          setWeather({ temp, code, desc });
+        }
       })
-      .catch(console.error);
+      .catch(() => {
+        // Silently fall back to default weather state if API fails or is blocked
+      });
   }, []);
 
   if (!weather) return null;
@@ -122,7 +138,7 @@ export default function FooterMap() {
         transition={{ duration: 0.8, delay: 0.2 }}
         className="glass p-6 md:p-8 rounded-2xl border border-white/10 backdrop-blur-md max-w-md mx-auto md:mx-0 relative"
       >
-        <div className="flex justify-between items-start gap-4 mb-6">
+        <div className="flex justify-between items-end gap-4 mb-6">
           {/* Left Side: Location Info */}
           <div>
             <div className="flex items-center gap-4 mb-6">
