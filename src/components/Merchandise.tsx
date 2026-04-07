@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ShoppingCart, Plus, ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ShoppingCart, Plus, ArrowRight, ChevronLeft, ChevronRight, Truck, MapPin } from 'lucide-react';
 import { useAI } from '../lib/AIContext';
 import { useCart } from '../lib/CartContext';
 import { cn } from '../lib/utils';
@@ -127,8 +127,7 @@ export default function Merchandise() {
   const [activeTab, setActiveTab] = useState<'Goods' | 'Swag'>('Goods');
   const [activeCategory, setActiveCategory] = useState<string>('All');
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [leftClicks, setLeftClicks] = useState(0);
-  const [rightClicks, setRightClicks] = useState(0);
+  const [direction, setDirection] = useState(0);
   const [selectedSize, setSelectedSize] = useState<string>('');
   const [selectedColor, setSelectedColor] = useState<string>('');
   const [quantity, setQuantity] = useState(1);
@@ -143,20 +142,17 @@ export default function Merchandise() {
     return true;
   });
 
-  const nextSlide = () => {
+  const paginate = (newDirection: number) => {
     if (filteredProducts.length === 0) return;
-    setRightClicks(c => c + 1);
-    setCurrentIndex((prev) => (prev + 1) % filteredProducts.length);
+    setDirection(newDirection);
+    setCurrentIndex((prev) => (prev + newDirection + filteredProducts.length) % filteredProducts.length);
     resetSelections();
     setSelectedId(null);
   };
 
-  const prevSlide = () => {
-    if (filteredProducts.length === 0) return;
-    setLeftClicks(c => c + 1);
-    setCurrentIndex((prev) => (prev - 1 + filteredProducts.length) % filteredProducts.length);
-    resetSelections();
-    setSelectedId(null);
+  const swipeConfidenceThreshold = 10000;
+  const swipePower = (offset: number, velocity: number) => {
+    return Math.abs(offset) * velocity;
   };
 
   const resetSelections = () => {
@@ -247,7 +243,7 @@ export default function Merchandise() {
           </div>
 
           {/* Subcategories */}
-          <div className="flex flex-wrap justify-center gap-2 mb-8">
+          <div className="flex flex-wrap justify-center gap-2 mb-4">
             {(activeTab === 'Goods' ? goodsCategories : swagCategories).map(category => (
               <button
                 key={category}
@@ -263,6 +259,51 @@ export default function Merchandise() {
               </button>
             ))}
           </div>
+
+          {/* Size and Color Options */}
+          {currentProduct && (currentProduct.sizes.length > 0 || currentProduct.colors.length > 0) && (
+            <div className="flex flex-col items-center gap-6 mt-2">
+              {currentProduct.sizes.length > 0 && (
+                <div className="flex flex-col items-center">
+                  <label className="block text-[10px] uppercase tracking-widest opacity-50 mb-2">Size</label>
+                  <div className="flex flex-wrap justify-center gap-2">
+                    {currentProduct.sizes.map(size => (
+                      <button 
+                        key={size}
+                        onClick={() => setSelectedSize(size)}
+                        className={cn(
+                          "px-4 py-2 rounded-lg border text-sm font-bold transition-colors",
+                          selectedSize === size ? "bg-brand-green text-black border-brand-green" : "border-white/10 hover:border-white/30"
+                        )}
+                      >
+                        {size}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {currentProduct.colors.length > 0 && (
+                <div className="flex flex-col items-center">
+                  <label className="block text-[10px] uppercase tracking-widest opacity-50 mb-2">Color</label>
+                  <div className="flex flex-wrap justify-center gap-2">
+                    {currentProduct.colors.map(color => (
+                      <button 
+                        key={color}
+                        onClick={() => setSelectedColor(color)}
+                        className={cn(
+                          "px-4 py-2 rounded-lg border text-sm font-bold transition-colors",
+                          selectedColor === color ? "bg-brand-green text-black border-brand-green" : "border-white/10 hover:border-white/30"
+                        )}
+                      >
+                        {color}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {filteredProducts.length === 0 ? (
@@ -272,199 +313,174 @@ export default function Merchandise() {
         ) : (
           <>
             {/* Slider Area */}
-            <div className="relative w-full max-w-5xl mx-auto flex items-center justify-center py-12 mb-12">
-              <button 
-                onClick={prevSlide}
-                className="absolute left-0 md:left-12 z-20 p-4 glass rounded-full hover:bg-white/10 transition-colors"
+            <div className="relative w-full max-w-5xl mx-auto flex flex-col items-center justify-center py-12 mb-12">
+              <motion.div
+                drag="x"
+                dragConstraints={{ left: 0, right: 0 }}
+                dragElastic={1}
+                onDragEnd={(e, { offset, velocity }) => {
+                  const swipe = swipePower(offset.x, velocity.x);
+                  if (swipe < -swipeConfidenceThreshold) {
+                    paginate(1);
+                  } else if (swipe > swipeConfidenceThreshold) {
+                    paginate(-1);
+                  }
+                }}
+                className="flex items-center justify-center gap-4 md:gap-8 overflow-hidden w-full px-4 md:px-12 py-8 cursor-grab active:cursor-grabbing min-h-[400px]"
               >
-                <motion.div
-                  key={leftClicks}
-                  initial={{ color: "#ffffff", scale: 1, filter: "drop-shadow(0 0 0px #00ff00)" }}
-                  animate={leftClicks > 0 ? { 
-                    color: ["#ffffff", "#00ff00", "#ffffff", "#808080", "#00ff00", "#ffffff", "#ffffff"],
-                    scale: [1, 1.6, 0.7, 1.4, 0.8, 1.2, 1],
-                    x: [0, -8, 8, -4, 4, -2, 0],
-                    y: [0, 4, -4, 2, -2, 1, 0],
-                    skewX: [0, 30, -30, 15, -15, 5, 0],
-                    opacity: [1, 0, 1, 0.2, 1, 0.5, 1],
-                    filter: [
-                      "drop-shadow(0 0 0px #00ff00)",
-                      "drop-shadow(0 0 40px #00ff00)",
-                      "drop-shadow(0 0 10px #ffffff)",
-                      "drop-shadow(0 0 50px #00ff00)",
-                      "drop-shadow(0 0 20px #808080)",
-                      "drop-shadow(0 0 30px #00ff00)",
-                      "drop-shadow(0 0 0px #00ff00)"
-                    ]
-                  } : { color: "#ffffff" }}
-                  transition={{ duration: 0.5, ease: "easeInOut" }}
-                >
-                  <ChevronLeft size={32} />
-                </motion.div>
-              </button>
+                <AnimatePresence initial={false} custom={direction} mode="popLayout">
+                  {[-1, 0, 1].map((offset) => {
+                    let displayProducts = [...filteredProducts];
+                    if (filteredProducts.length === 1) {
+                      displayProducts = [
+                        { ...filteredProducts[0], id: filteredProducts[0].id + '-1000' },
+                        filteredProducts[0],
+                        { ...filteredProducts[0], id: filteredProducts[0].id + '-2000' }
+                      ];
+                    } else if (filteredProducts.length === 2) {
+                      displayProducts = [
+                        filteredProducts[0],
+                        filteredProducts[1],
+                        { ...filteredProducts[0], id: filteredProducts[0].id + '-1000' },
+                        { ...filteredProducts[1], id: filteredProducts[1].id + '-2000' }
+                      ];
+                    }
 
-              <div className="flex items-center justify-center gap-4 md:gap-8 overflow-hidden w-full px-12 py-8">
-                {[-1, 0, 1].map((offset) => {
-                  let index = (currentIndex + offset) % filteredProducts.length;
-                  if (index < 0) index += filteredProducts.length;
-                  const product = filteredProducts[index];
-                  const isCenter = offset === 0;
+                    let index = (currentIndex + offset) % displayProducts.length;
+                    if (index < 0) index += displayProducts.length;
+                    const product = displayProducts[index];
+                    const isCenter = offset === 0;
 
-                  if (!product) return null;
+                    if (!product) return null;
+                    
+                    // Use original ID for selection
+                    const originalId = product.id.replace('-1000', '').replace('-2000', '');
 
+                    return (
+                      <motion.div
+                        layout
+                        key={product.id}
+                        custom={direction}
+                        initial={{ 
+                          x: direction > 0 ? 100 : -100, 
+                          opacity: 0,
+                          scale: 0.8
+                        }}
+                        animate={{ 
+                          x: 0, 
+                          opacity: isCenter ? 1 : 0.3,
+                          scale: isCenter ? 1 : 0.9,
+                          filter: isCenter ? "blur(0px)" : "blur(2px)"
+                        }}
+                        exit={{ 
+                          x: direction < 0 ? 100 : -100, 
+                          opacity: 0,
+                          scale: 0.8,
+                          filter: "blur(4px)"
+                        }}
+                        transition={{ duration: 0.4, ease: "easeInOut" }}
+                        onClick={() => {
+                          if (isCenter) {
+                            setSelectedId(originalId);
+                          } else if (offset === -1) {
+                            paginate(-1);
+                          } else {
+                            paginate(1);
+                          }
+                        }}
+                        className={cn(
+                          "relative flex flex-col items-center shrink-0 cursor-pointer",
+                          isCenter ? "w-64 md:w-80 z-10" : "w-40 md:w-56 hidden sm:flex z-0",
+                          isCenter && selectedId === originalId ? "ring-2 ring-brand-green ring-offset-4 ring-offset-black rounded-3xl" : ""
+                        )}
+                      >
+                        <div className="relative w-full aspect-[4/5] rounded-3xl overflow-hidden bg-black group">
+                          <img 
+                            src={product.image} 
+                            alt={product.name}
+                            className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700"
+                            referrerPolicy="no-referrer"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent pointer-events-none" />
+                          
+                          {isCenter && (
+                            <div className="absolute bottom-0 left-0 right-0 p-6 text-left z-20">
+                              <div className="flex justify-between items-end">
+                                <div>
+                                  <p className="text-[10px] uppercase tracking-widest text-brand-green font-bold mb-1">{product.category}</p>
+                                  <h3 className="text-xl md:text-2xl font-bold uppercase text-white">{product.name}</h3>
+                                </div>
+                                <span className="text-2xl font-bold text-brand-green">${product.price}</span>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </AnimatePresence>
+              </motion.div>
+
+              {/* Dashes Pagination */}
+              <div className="flex justify-center gap-2 mt-4 flex-wrap">
+                {filteredProducts.map((_, idx) => {
+                  const isActive = (currentIndex % filteredProducts.length) === idx;
                   return (
                     <button
-                      key={`${product.id}-${offset}`}
+                      key={idx}
                       onClick={() => {
-                        if (isCenter) {
-                          setSelectedId(product.id);
-                        } else if (offset === -1) {
-                          prevSlide();
-                        } else if (offset === 1) {
-                          nextSlide();
-                        }
+                        setDirection(idx > (currentIndex % filteredProducts.length) ? 1 : -1);
+                        setCurrentIndex(idx);
                       }}
                       className={cn(
-                        "relative flex flex-col items-center transition-all duration-500",
-                        isCenter ? "w-64 md:w-80 opacity-100 scale-110 z-10" : "w-40 md:w-56 opacity-30 scale-90 blur-[2px] hidden sm:flex",
-                        isCenter && selectedId === product.id ? "ring-2 ring-brand-green ring-offset-4 ring-offset-black rounded-3xl" : ""
+                        "h-1 rounded-full transition-all duration-300",
+                        isActive ? "w-8 bg-brand-green" : "w-4 bg-brand-green/20 hover:bg-brand-green/40"
                       )}
-                    >
-                      <div className="relative w-full aspect-[4/5] rounded-3xl overflow-hidden bg-black group">
-                        <img 
-                          src={product.image} 
-                          alt={product.name}
-                          className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700"
-                          referrerPolicy="no-referrer"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent pointer-events-none" />
-                        
-                        {isCenter && (
-                          <div className="absolute bottom-0 left-0 right-0 p-6 text-left z-20">
-                            <div className="flex justify-between items-end">
-                              <div>
-                                <p className="text-[10px] uppercase tracking-widest text-brand-green font-bold mb-1">{product.category}</p>
-                                <h3 className="text-xl md:text-2xl font-bold uppercase text-white">{product.name}</h3>
-                              </div>
-                              <span className="text-2xl font-bold text-brand-green">${product.price}</span>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </button>
+                    />
                   );
                 })}
               </div>
-
-              <button 
-                onClick={nextSlide}
-                className="absolute right-0 md:right-12 z-20 p-4 glass rounded-full hover:bg-white/10 transition-colors"
-              >
-                <motion.div
-                  key={rightClicks}
-                  initial={{ color: "#ffffff", scale: 1, filter: "drop-shadow(0 0 0px #00ff00)" }}
-                  animate={rightClicks > 0 ? { 
-                    color: ["#ffffff", "#00ff00", "#ffffff", "#808080", "#00ff00", "#ffffff", "#ffffff"],
-                    scale: [1, 1.6, 0.7, 1.4, 0.8, 1.2, 1],
-                    x: [0, 8, -8, 4, -4, 2, 0],
-                    y: [0, 4, -4, 2, -2, 1, 0],
-                    skewX: [0, -30, 30, -15, 15, -5, 0],
-                    opacity: [1, 0, 1, 0.2, 1, 0.5, 1],
-                    filter: [
-                      "drop-shadow(0 0 0px #00ff00)",
-                      "drop-shadow(0 0 40px #00ff00)",
-                      "drop-shadow(0 0 10px #ffffff)",
-                      "drop-shadow(0 0 50px #00ff00)",
-                      "drop-shadow(0 0 20px #808080)",
-                      "drop-shadow(0 0 30px #00ff00)",
-                      "drop-shadow(0 0 0px #00ff00)"
-                    ]
-                  } : { color: "#ffffff" }}
-                  transition={{ duration: 0.5, ease: "easeInOut" }}
-                >
-                  <ChevronRight size={32} />
-                </motion.div>
-              </button>
             </div>
 
-            {/* Options & Add to Cart */}
-            <div className="max-w-3xl mx-auto glass p-8 rounded-3xl border-white/5">
-              <div className="grid md:grid-cols-2 gap-8 mb-8">
-                {/* Options */}
-                <div className="space-y-6">
-                  {currentProduct.sizes.length > 0 && (
-                    <div>
-                      <label className="block text-[10px] uppercase tracking-widest opacity-50 mb-2">Size</label>
-                      <div className="flex flex-wrap gap-2">
-                        {currentProduct.sizes.map(size => (
-                          <button 
-                            key={size}
-                            onClick={() => setSelectedSize(size)}
-                            className={cn(
-                              "px-4 py-2 rounded-lg border text-sm font-bold transition-colors",
-                              selectedSize === size ? "bg-brand-green text-black border-brand-green" : "border-white/10 hover:border-white/30"
-                            )}
-                          >
-                            {size}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                  
-                  {currentProduct.colors.length > 0 && (
-                    <div>
-                      <label className="block text-[10px] uppercase tracking-widest opacity-50 mb-2">Color</label>
-                      <div className="flex flex-wrap gap-2">
-                        {currentProduct.colors.map(color => (
-                          <button 
-                            key={color}
-                            onClick={() => setSelectedColor(color)}
-                            className={cn(
-                              "px-4 py-2 rounded-lg border text-sm font-bold transition-colors",
-                              selectedColor === color ? "bg-brand-green text-black border-brand-green" : "border-white/10 hover:border-white/30"
-                            )}
-                          >
-                            {color}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  <div>
-                    <label className="block text-[10px] uppercase tracking-widest opacity-50 mb-2">Quantity</label>
-                    <div className="flex items-center gap-4">
-                      <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="w-10 h-10 rounded-lg border border-white/10 flex items-center justify-center hover:bg-white/5">-</button>
-                      <span className="font-bold w-8 text-center">{quantity}</span>
-                      <button onClick={() => setQuantity(quantity + 1)} className="w-10 h-10 rounded-lg border border-white/10 flex items-center justify-center hover:bg-white/5">+</button>
-                    </div>
+            {/* Quantity, Total Price & Add to Cart */}
+            <div className="max-w-md mx-auto flex flex-col items-center justify-center">
+              <div className="flex items-center justify-center gap-8 mb-6">
+                <div className="flex flex-col items-center">
+                  <label className="block text-[10px] uppercase tracking-widest opacity-50 mb-2">Quantity</label>
+                  <div className="flex items-center gap-4">
+                    <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="w-10 h-10 rounded-lg border border-white/10 flex items-center justify-center hover:bg-white/5 transition-colors">-</button>
+                    <span className="font-bold w-8 text-center">{quantity}</span>
+                    <button onClick={() => setQuantity(quantity + 1)} className="w-10 h-10 rounded-lg border border-white/10 flex items-center justify-center hover:bg-white/5 transition-colors">+</button>
                   </div>
                 </div>
+                <div className="flex flex-col items-center">
+                  <label className="block text-[10px] uppercase tracking-widest opacity-50 mb-2">Total Price</label>
+                  <span className="font-bold text-brand-green text-2xl">${currentProduct.price * quantity}</span>
+                </div>
+              </div>
+              
+              <button 
+                onClick={handleAddToCart}
+                className="w-full py-4 bg-brand-green text-black font-bold uppercase tracking-widest rounded-xl hover:bg-white transition-colors flex items-center justify-center gap-2"
+              >
+                <ShoppingCart size={18} /> Add to Cart
+              </button>
 
-                {/* Summary */}
-                <div className="bg-black/30 p-6 rounded-2xl flex flex-col justify-between">
-                  <div className="space-y-4 mb-6">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-white/50">Total Price:</span>
-                      <span className="font-bold text-brand-green">${currentProduct.price * quantity}</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-white/50">Est. Delivery:</span>
-                      <span className="font-bold">{currentProduct.deliveryDate}</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-white/50">Tracking:</span>
-                      <span className="font-bold">Provided via email</span>
-                    </div>
+              {/* Delivery & Tracking Icons */}
+              <div className="flex items-center justify-center gap-12 mt-8">
+                <div className="relative group flex items-center justify-center cursor-help">
+                  <Truck size={36} className="text-brand-green transition-transform duration-300 group-hover:scale-110" />
+                  {/* Tooltip */}
+                  <div className="absolute top-full mt-4 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0 bg-black text-white text-[10px] uppercase tracking-widest px-4 py-2 rounded-lg pointer-events-none whitespace-nowrap z-50 border border-brand-green/30 shadow-[0_0_20px_rgba(0,255,0,0.1)]">
+                    Est. Delivery: {currentProduct.deliveryDate}
                   </div>
-                  
-                  <button 
-                    onClick={handleAddToCart}
-                    className="w-full py-4 bg-brand-green text-black font-bold uppercase tracking-widest rounded-xl hover:bg-white transition-colors flex items-center justify-center gap-2"
-                  >
-                    <ShoppingCart size={18} /> Add to Cart
-                  </button>
+                </div>
+                <div className="relative group flex items-center justify-center cursor-help">
+                  <MapPin size={36} className="text-brand-green transition-transform duration-300 group-hover:scale-110" />
+                  {/* Tooltip */}
+                  <div className="absolute top-full mt-4 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0 bg-black text-white text-[10px] uppercase tracking-widest px-4 py-2 rounded-lg pointer-events-none whitespace-nowrap z-50 border border-brand-green/30 shadow-[0_0_20px_rgba(0,255,0,0.1)]">
+                    Tracking Available
+                  </div>
                 </div>
               </div>
             </div>

@@ -24,24 +24,22 @@ export default function BodyOfWork() {
   const { setSelectedWork } = useAI();
   const [activeCategory, setActiveCategory] = useState('All');
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [leftClicks, setLeftClicks] = useState(0);
-  const [rightClicks, setRightClicks] = useState(0);
+  const [direction, setDirection] = useState(0);
   const [selectedId, setSelectedId] = useState<number | null>(null);
 
   const filteredStyles = activeCategory === 'All' 
     ? portfolioItems 
     : portfolioItems.filter(item => item.category === activeCategory);
 
-  const next = () => {
-    setRightClicks(c => c + 1);
-    setCurrentIndex((prev) => (prev + 1) % filteredStyles.length);
+  const paginate = (newDirection: number) => {
+    setDirection(newDirection);
+    setCurrentIndex((prev) => (prev + newDirection + filteredStyles.length) % filteredStyles.length);
     setSelectedId(null);
   };
 
-  const prev = () => {
-    setLeftClicks(c => c + 1);
-    setCurrentIndex((prev) => (prev - 1 + filteredStyles.length) % filteredStyles.length);
-    setSelectedId(null);
+  const swipeConfidenceThreshold = 10000;
+  const swipePower = (offset: number, velocity: number) => {
+    return Math.abs(offset) * velocity;
   };
 
   const currentStyle = filteredStyles[currentIndex];
@@ -90,115 +88,129 @@ export default function BodyOfWork() {
             No styles found in this category.
           </div>
         ) : (
-          <div className="relative w-full max-w-5xl mx-auto flex items-center justify-center py-12">
-            <button 
-              onClick={prev}
-              className="absolute left-0 md:left-12 z-20 p-4 glass rounded-full hover:bg-white/10 transition-colors"
+          <div className="relative w-full max-w-5xl mx-auto flex flex-col items-center justify-center py-12">
+            <motion.div
+              drag="x"
+              dragConstraints={{ left: 0, right: 0 }}
+              dragElastic={1}
+              onDragEnd={(e, { offset, velocity }) => {
+                const swipe = swipePower(offset.x, velocity.x);
+                if (swipe < -swipeConfidenceThreshold) {
+                  paginate(1);
+                } else if (swipe > swipeConfidenceThreshold) {
+                  paginate(-1);
+                }
+              }}
+              className="flex items-center justify-center gap-4 md:gap-8 overflow-hidden w-full px-4 md:px-12 py-8 cursor-grab active:cursor-grabbing min-h-[400px]"
             >
-              <motion.div
-                key={leftClicks}
-                initial={{ color: "#ffffff", scale: 1, filter: "drop-shadow(0 0 0px #00ff00)" }}
-                animate={leftClicks > 0 ? { 
-                  color: ["#ffffff", "#00ff00", "#ffffff", "#808080", "#00ff00", "#ffffff", "#ffffff"],
-                  scale: [1, 1.6, 0.7, 1.4, 0.8, 1.2, 1],
-                  x: [0, -8, 8, -4, 4, -2, 0],
-                  y: [0, 4, -4, 2, -2, 1, 0],
-                  skewX: [0, 30, -30, 15, -15, 5, 0],
-                  opacity: [1, 0, 1, 0.2, 1, 0.5, 1],
-                  filter: [
-                    "drop-shadow(0 0 0px #00ff00)",
-                    "drop-shadow(0 0 40px #00ff00)",
-                    "drop-shadow(0 0 10px #ffffff)",
-                    "drop-shadow(0 0 50px #00ff00)",
-                    "drop-shadow(0 0 20px #808080)",
-                    "drop-shadow(0 0 30px #00ff00)",
-                    "drop-shadow(0 0 0px #00ff00)"
-                  ]
-                } : { color: "#ffffff" }}
-                transition={{ duration: 0.5, ease: "easeInOut" }}
-              >
-                <ChevronLeft size={32} />
-              </motion.div>
-            </button>
+              <AnimatePresence initial={false} custom={direction} mode="popLayout">
+                {[-1, 0, 1].map((offset) => {
+                  let displayStyles = [...filteredStyles];
+                  if (filteredStyles.length === 1) {
+                    displayStyles = [
+                      { ...filteredStyles[0], id: Number(filteredStyles[0].id) + 1000 },
+                      filteredStyles[0],
+                      { ...filteredStyles[0], id: Number(filteredStyles[0].id) + 2000 }
+                    ];
+                  } else if (filteredStyles.length === 2) {
+                    displayStyles = [
+                      filteredStyles[0],
+                      filteredStyles[1],
+                      { ...filteredStyles[0], id: Number(filteredStyles[0].id) + 1000 },
+                      { ...filteredStyles[1], id: Number(filteredStyles[1].id) + 2000 }
+                    ];
+                  }
 
-            <div className="flex items-center justify-center gap-4 md:gap-8 overflow-hidden w-full px-12 py-8">
-              {[-1, 0, 1].map((offset) => {
-                let index = (currentIndex + offset) % filteredStyles.length;
-                if (index < 0) index += filteredStyles.length;
-                const style = filteredStyles[index];
-                const isCenter = offset === 0;
+                  let index = (currentIndex + offset) % displayStyles.length;
+                  if (index < 0) index += displayStyles.length;
+                  const style = displayStyles[index];
+                  const isCenter = offset === 0;
 
-                if (!style) return null;
+                  if (!style) return null;
+                  
+                  // Use original ID for selection
+                  const originalId = style.id > 1000 ? (style.id > 2000 ? style.id - 2000 : style.id - 1000) : style.id;
 
+                  return (
+                    <motion.div
+                      layout
+                      key={style.id}
+                      custom={direction}
+                      initial={{ 
+                        x: direction > 0 ? 100 : -100, 
+                        opacity: 0,
+                        scale: 0.8
+                      }}
+                      animate={{ 
+                        x: 0, 
+                        opacity: isCenter ? 1 : 0.3,
+                        scale: isCenter ? 1 : 0.9,
+                        filter: isCenter ? "blur(0px)" : "blur(2px)"
+                      }}
+                      exit={{ 
+                        x: direction < 0 ? 100 : -100, 
+                        opacity: 0,
+                        scale: 0.8,
+                        filter: "blur(4px)"
+                      }}
+                      transition={{ duration: 0.4, ease: "easeInOut" }}
+                      onClick={() => {
+                        if (isCenter) {
+                          setSelectedId(originalId);
+                          setSelectedWork(style.name);
+                        } else if (offset === -1) {
+                          paginate(-1);
+                        } else {
+                          paginate(1);
+                        }
+                      }}
+                      className={cn(
+                        "relative flex flex-col items-center shrink-0 cursor-pointer",
+                        isCenter ? "w-64 md:w-80 z-10" : "w-40 md:w-56 hidden sm:flex z-0",
+                        isCenter && selectedId === originalId ? "ring-2 ring-brand-green ring-offset-4 ring-offset-black rounded-3xl" : ""
+                      )}
+                    >
+                      <div className="relative w-full aspect-[4/5] rounded-3xl overflow-hidden bg-black group">
+                        <img 
+                          src={style.image} 
+                          alt={style.name}
+                          className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700"
+                          referrerPolicy="no-referrer"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent pointer-events-none" />
+                        
+                        {isCenter && (
+                          <div className="absolute bottom-0 left-0 right-0 p-6 text-center z-20">
+                            <p className="text-[10px] uppercase tracking-widest text-brand-green font-bold mb-2">{style.category}</p>
+                            <h3 className="text-xl md:text-2xl font-bold uppercase text-white">{style.name}</h3>
+                          </div>
+                        )}
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </AnimatePresence>
+            </motion.div>
+
+            {/* Dashes Pagination */}
+            <div className="flex justify-center gap-2 mt-4 flex-wrap">
+              {filteredStyles.map((_, idx) => {
+                const isActive = (currentIndex % filteredStyles.length) === idx;
                 return (
                   <button
-                    key={`${style.id}-${offset}`}
+                    key={idx}
                     onClick={() => {
-                      if (isCenter) {
-                        setSelectedId(style.id);
-                        setSelectedWork(style.name);
-                      } else if (offset === -1) {
-                        prev();
-                      } else {
-                        next();
-                      }
+                      setDirection(idx > (currentIndex % filteredStyles.length) ? 1 : -1);
+                      setCurrentIndex(idx);
                     }}
                     className={cn(
-                      "relative flex flex-col items-center transition-all duration-500",
-                      isCenter ? "w-64 md:w-80 opacity-100 scale-110 z-10" : "w-40 md:w-56 opacity-30 scale-90 blur-[2px] hidden sm:flex",
-                      isCenter && selectedId === style.id ? "ring-2 ring-brand-green ring-offset-4 ring-offset-black rounded-3xl" : ""
+                      "h-1 rounded-full transition-all duration-300",
+                      isActive ? "w-8 bg-brand-green" : "w-4 bg-brand-green/20 hover:bg-brand-green/40"
                     )}
-                  >
-                    <div className="relative w-full aspect-[4/5] rounded-3xl overflow-hidden bg-black group">
-                      <img 
-                        src={style.image} 
-                        alt={style.name}
-                        className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700"
-                        referrerPolicy="no-referrer"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent pointer-events-none" />
-                      
-                      {isCenter && (
-                        <div className="absolute bottom-0 left-0 right-0 p-6 text-center z-20">
-                          <p className="text-[10px] uppercase tracking-widest text-brand-green font-bold mb-2">{style.category}</p>
-                          <h3 className="text-xl md:text-2xl font-bold uppercase text-white">{style.name}</h3>
-                        </div>
-                      )}
-                    </div>
-                  </button>
+                  />
                 );
               })}
             </div>
-
-            <button 
-              onClick={next}
-              className="absolute right-0 md:right-12 z-20 p-4 glass rounded-full hover:bg-white/10 transition-colors"
-            >
-              <motion.div
-                key={rightClicks}
-                initial={{ color: "#ffffff", scale: 1, filter: "drop-shadow(0 0 0px #00ff00)" }}
-                animate={rightClicks > 0 ? { 
-                  color: ["#ffffff", "#00ff00", "#ffffff", "#808080", "#00ff00", "#ffffff", "#ffffff"],
-                  scale: [1, 1.6, 0.7, 1.4, 0.8, 1.2, 1],
-                  x: [0, 8, -8, 4, -4, 2, 0],
-                  y: [0, 4, -4, 2, -2, 1, 0],
-                  skewX: [0, -30, 30, -15, 15, -5, 0],
-                  opacity: [1, 0, 1, 0.2, 1, 0.5, 1],
-                  filter: [
-                    "drop-shadow(0 0 0px #00ff00)",
-                    "drop-shadow(0 0 40px #00ff00)",
-                    "drop-shadow(0 0 10px #ffffff)",
-                    "drop-shadow(0 0 50px #00ff00)",
-                    "drop-shadow(0 0 20px #808080)",
-                    "drop-shadow(0 0 30px #00ff00)",
-                    "drop-shadow(0 0 0px #00ff00)"
-                  ]
-                } : { color: "#ffffff" }}
-                transition={{ duration: 0.5, ease: "easeInOut" }}
-              >
-                <ChevronRight size={32} />
-              </motion.div>
-            </button>
           </div>
         )}
       </div>

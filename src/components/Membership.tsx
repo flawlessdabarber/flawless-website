@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { motion } from 'motion/react';
-import { Check, Crown, Briefcase, TrendingUp, User, ChevronLeft, ChevronRight } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
+import { Check, Crown, Briefcase, TrendingUp, User } from 'lucide-react';
 import { useAI } from '../lib/AIContext';
 import { cn } from '../lib/utils';
 
@@ -11,8 +11,34 @@ export default function Membership() {
   const [routine, setRoutine] = useState(1);
   const [serviceType, setServiceType] = useState<ServiceType>('cut');
   const [tierIndex, setTierIndex] = useState(0);
-  const [leftClicks, setLeftClicks] = useState(0);
-  const [rightClicks, setRightClicks] = useState(0);
+  const [direction, setDirection] = useState(0);
+
+  const paginate = (newDirection: number) => {
+    setDirection(newDirection);
+    setTierIndex((prev) => (prev + newDirection + 4) % 4);
+  };
+
+  const swipeConfidenceThreshold = 10000;
+  const swipePower = (offset: number, velocity: number) => {
+    return Math.abs(offset) * velocity;
+  };
+
+  const variants = {
+    enter: (direction: number) => ({
+      x: direction > 0 ? 50 : -50,
+      opacity: 0
+    }),
+    center: {
+      zIndex: 1,
+      x: 0,
+      opacity: 1
+    },
+    exit: (direction: number) => ({
+      zIndex: 0,
+      x: direction < 0 ? 50 : -50,
+      opacity: 0
+    })
+  };
 
   const getPrice = (tierName: string) => {
     if (tierName === 'Kids') {
@@ -110,153 +136,135 @@ export default function Membership() {
       </div>
 
       <div className="container mx-auto px-6">
-        <div className="relative w-full max-w-5xl mx-auto flex items-center justify-center mb-16">
-          <button 
-            onClick={() => {
-              setLeftClicks(c => c + 1);
-              setTierIndex(prev => (prev === 0 ? 3 : prev - 1));
+        <div className="relative w-full max-w-5xl mx-auto flex flex-col items-center justify-center mb-16">
+          <motion.div 
+            drag="x"
+            dragConstraints={{ left: 0, right: 0 }}
+            dragElastic={1}
+            onDragEnd={(e, { offset, velocity }) => {
+              const swipe = swipePower(offset.x, velocity.x);
+              if (swipe < -swipeConfidenceThreshold) {
+                paginate(1);
+              } else if (swipe > swipeConfidenceThreshold) {
+                paginate(-1);
+              }
             }}
-            className="absolute left-0 md:-left-4 z-20 p-2 glass rounded-full hover:bg-white/10 transition-colors"
+            className="flex items-center justify-center gap-4 md:gap-8 overflow-hidden w-full px-4 md:px-12 py-8 cursor-grab active:cursor-grabbing min-h-[500px]"
           >
-            <motion.div
-              key={leftClicks}
-              initial={{ color: "#ffffff", scale: 1, filter: "drop-shadow(0 0 0px #00ff00)" }}
-              animate={leftClicks > 0 ? { 
-                color: ["#ffffff", "#00ff00", "#ffffff", "#808080", "#00ff00", "#ffffff", "#ffffff"],
-                scale: [1, 1.6, 0.7, 1.4, 0.8, 1.2, 1],
-                x: [0, -8, 8, -4, 4, -2, 0],
-                y: [0, 4, -4, 2, -2, 1, 0],
-                skewX: [0, 30, -30, 15, -15, 5, 0],
-                opacity: [1, 0, 1, 0.2, 1, 0.5, 1],
-                filter: [
-                  "drop-shadow(0 0 0px #00ff00)",
-                  "drop-shadow(0 0 40px #00ff00)",
-                  "drop-shadow(0 0 10px #ffffff)",
-                  "drop-shadow(0 0 50px #00ff00)",
-                  "drop-shadow(0 0 20px #808080)",
-                  "drop-shadow(0 0 30px #00ff00)",
-                  "drop-shadow(0 0 0px #00ff00)"
-                ]
-              } : { color: "#ffffff" }}
-              transition={{ duration: 0.5, ease: "easeInOut" }}
-            >
-              <ChevronLeft size={24} />
-            </motion.div>
-          </button>
+            <AnimatePresence initial={false} custom={direction} mode="popLayout">
+              {[-1, 0, 1].map((offset) => {
+                let index = (tierIndex + offset) % 4;
+                if (index < 0) index += 4;
+                const tier = tiers[index];
+                const isCenter = offset === 0;
+                const price = getPrice(tier.name);
+                const isRestricted = serviceType === 'urban' && (tier.name === 'Corporate' || tier.name === 'Investment');
 
-          <div className="flex items-center justify-center gap-4 md:gap-8 overflow-hidden w-full px-12 py-8">
-            {[-1, 0, 1].map((offset) => {
-              let index = (tierIndex + offset) % 4;
-              if (index < 0) index += 4;
-              const tier = tiers[index];
-              const isCenter = offset === 0;
-              
-              const price = getPrice(tier.name);
-              const isRestricted = serviceType === 'urban' && (tier.name === 'Corporate' || tier.name === 'Investment');
-
-              return (
-                <button
-                  key={`${tier.name}-${offset}`}
-                  onClick={() => {
-                    if (isCenter) {
-                      if (!isRestricted) {
-                        setSelectedMembership(`${tier.name} - ${routine}x ${serviceType}s`);
+                return (
+                  <motion.div
+                    layout
+                    key={tier.name}
+                    custom={direction}
+                    initial={{ 
+                      x: direction > 0 ? 100 : -100, 
+                      opacity: 0,
+                      scale: 0.8
+                    }}
+                    animate={{ 
+                      x: 0, 
+                      opacity: isCenter ? 1 : 0.3,
+                      scale: isCenter ? 1 : 0.9,
+                      filter: isCenter ? "blur(0px)" : "blur(2px)"
+                    }}
+                    exit={{ 
+                      x: direction < 0 ? 100 : -100, 
+                      opacity: 0,
+                      scale: 0.8,
+                      filter: "blur(4px)"
+                    }}
+                    transition={{ duration: 0.4, ease: "easeInOut" }}
+                    onClick={() => {
+                      if (isCenter) {
+                        if (!isRestricted) {
+                          setSelectedMembership(`${tier.name} - ${routine}x ${serviceType}s`);
+                        }
+                      } else if (offset === -1) {
+                        paginate(-1);
+                      } else {
+                        paginate(1);
                       }
-                    } else if (offset === -1) {
-                      setLeftClicks(c => c + 1);
-                      setTierIndex(prev => (prev === 0 ? 3 : prev - 1));
-                    } else {
-                      setRightClicks(c => c + 1);
-                      setTierIndex(prev => (prev + 1) % 4);
-                    }
-                  }}
-                  className={cn(
-                    "relative flex flex-col transition-all duration-500 text-left",
-                    isCenter ? "w-full max-w-sm opacity-100 scale-100 z-10" : "w-64 opacity-30 scale-90 blur-[2px] hidden md:flex",
-                    isRestricted ? "cursor-not-allowed" : "cursor-pointer"
-                  )}
-                >
-                  <div className={cn(
-                    "glass p-8 rounded-3xl flex flex-col border-white/5 transition-all bg-brand-gray/10 backdrop-blur-xl shadow-2xl shadow-black/50 relative overflow-hidden group w-full h-full",
-                    isRestricted ? "border-red-500/30" : "",
-                    isCenter ? "border-brand-green bg-brand-green/5 ring-2 ring-brand-green ring-offset-4 ring-offset-black" : (!isRestricted && "hover:border-brand-green/30")
-                  )}>
-                    {isRestricted && (
-                      <div className="absolute inset-0 bg-red-950/60 z-10 pointer-events-none" />
+                    }}
+                    className={cn(
+                      "relative flex flex-col text-left shrink-0",
+                      isCenter ? "w-full max-w-sm z-10" : "w-64 hidden md:flex z-0",
+                      isRestricted ? "cursor-not-allowed" : "cursor-pointer"
                     )}
-                    <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity">
-                      <tier.icon size={80} />
-                    </div>
-                    
-                    <div className="w-12 h-12 bg-brand-green/10 rounded-2xl flex items-center justify-center mb-6">
-                      <tier.icon className="text-brand-green" />
-                    </div>
-                    
-                    <h3 className="text-2xl font-bold uppercase mb-2">{tier.name}</h3>
-                    <p className="text-white/40 text-xs mb-6 h-8">{tier.description}</p>
-                    
-                    <div className="flex items-baseline gap-1 mb-8">
-                      <span className="text-4xl font-bold text-brand-green">${price.toLocaleString()}</span>
-                      <span className="text-white/40 text-sm">/mo</span>
-                    </div>
-                    
-                    <ul className="space-y-4 mb-8 flex-1">
-                      {tier.features.map((feature, j) => (
-                        <li key={j} className="flex items-start gap-3 text-sm text-white/70">
-                          <Check className="text-brand-green shrink-0" size={16} />
-                          {feature}
-                        </li>
-                      ))}
-                    </ul>
-                    
-                    <div 
-                      className={cn(
-                        "w-full py-4 transition-all text-[10px] font-bold uppercase tracking-widest rounded-xl border text-center",
-                        isRestricted 
-                          ? "bg-red-500/10 text-red-500 border-red-500/30" 
-                          : "bg-white/5 hover:bg-brand-green hover:text-black border-white/10"
+                  >
+                    <div className={cn(
+                      "glass p-8 rounded-3xl flex flex-col border-white/5 transition-all bg-brand-gray/10 backdrop-blur-xl shadow-2xl shadow-black/50 relative overflow-hidden group w-full h-full",
+                      isRestricted ? "border-red-500/30 ring-2 ring-red-500/30 ring-offset-4 ring-offset-black" : (isCenter ? "border-brand-green bg-brand-green/5 ring-2 ring-brand-green ring-offset-4 ring-offset-black" : "hover:border-brand-green/30")
+                    )}>
+                      {isRestricted && (
+                        <div className="absolute inset-0 bg-red-950/60 z-10 pointer-events-none" />
                       )}
-                    >
-                      {isRestricted ? 'Not Available for Urban' : 'Select Plan'}
+                      <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity">
+                        <tier.icon size={80} />
+                      </div>
+                      
+                      <div className="w-12 h-12 bg-brand-green/10 rounded-2xl flex items-center justify-center mb-6">
+                        <tier.icon className="text-brand-green" />
+                      </div>
+                      
+                      <h3 className="text-2xl font-bold uppercase mb-2">{tier.name}</h3>
+                      <p className="text-white/40 text-xs mb-6 h-8">{tier.description}</p>
+                      
+                      <div className="flex items-baseline gap-1 mb-8">
+                        <span className="text-4xl font-bold text-brand-green">${price.toLocaleString()}</span>
+                        <span className="text-white/40 text-sm">/mo</span>
+                      </div>
+                      
+                      <ul className="space-y-4 mb-8 flex-1">
+                        {tier.features.map((feature, j) => (
+                          <li key={j} className="flex items-start gap-3 text-sm text-white/70">
+                            <Check className="text-brand-green shrink-0" size={16} />
+                            {feature}
+                          </li>
+                        ))}
+                      </ul>
+                      
+                      <div 
+                        className={cn(
+                          "w-full py-4 transition-all text-[10px] font-bold uppercase tracking-widest rounded-xl border text-center relative z-20",
+                          isRestricted 
+                            ? "bg-red-500/10 text-red-500 border-red-500/30" 
+                            : "bg-white/5 hover:bg-brand-green hover:text-black border-white/10"
+                        )}
+                      >
+                        {isRestricted ? 'Not Available for Urban' : 'Select Plan'}
+                      </div>
                     </div>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
+                  </motion.div>
+                );
+              })}
+            </AnimatePresence>
+          </motion.div>
 
-          <button 
-            onClick={() => {
-              setRightClicks(c => c + 1);
-              setTierIndex(prev => (prev + 1) % 4);
-            }}
-            className="absolute right-0 md:-right-4 z-20 p-2 glass rounded-full hover:bg-white/10 transition-colors"
-          >
-            <motion.div
-              key={rightClicks}
-              initial={{ color: "#ffffff", scale: 1, filter: "drop-shadow(0 0 0px #00ff00)" }}
-              animate={rightClicks > 0 ? { 
-                color: ["#ffffff", "#00ff00", "#ffffff", "#808080", "#00ff00", "#ffffff", "#ffffff"],
-                scale: [1, 1.6, 0.7, 1.4, 0.8, 1.2, 1],
-                x: [0, 8, -8, 4, -4, 2, 0],
-                y: [0, 4, -4, 2, -2, 1, 0],
-                skewX: [0, -30, 30, -15, 15, -5, 0],
-                opacity: [1, 0, 1, 0.2, 1, 0.5, 1],
-                filter: [
-                  "drop-shadow(0 0 0px #00ff00)",
-                  "drop-shadow(0 0 40px #00ff00)",
-                  "drop-shadow(0 0 10px #ffffff)",
-                  "drop-shadow(0 0 50px #00ff00)",
-                  "drop-shadow(0 0 20px #808080)",
-                  "drop-shadow(0 0 30px #00ff00)",
-                  "drop-shadow(0 0 0px #00ff00)"
-                ]
-              } : { color: "#ffffff" }}
-              transition={{ duration: 0.5, ease: "easeInOut" }}
-            >
-              <ChevronRight size={24} />
-            </motion.div>
-          </button>
+          {/* 4 Dashes Pagination */}
+          <div className="flex justify-center gap-2 mt-8">
+            {tiers.map((_, idx) => (
+              <button
+                key={idx}
+                onClick={() => {
+                  setDirection(idx > tierIndex ? 1 : -1);
+                  setTierIndex(idx);
+                }}
+                className={cn(
+                  "h-1 rounded-full transition-all duration-300",
+                  tierIndex === idx ? "w-8 bg-white" : "w-4 bg-white/20 hover:bg-white/40"
+                )}
+              />
+            ))}
+          </div>
         </div>
 
         {/* Bottom Glow */}

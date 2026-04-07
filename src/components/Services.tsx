@@ -24,12 +24,6 @@ const services: Service[] = [
     price: 55,
   },
   {
-    id: 'cleanup',
-    title: 'Clean Up',
-    description: 'Quick neck and sideburn trim to keep you looking sharp between cuts.',
-    price: 25,
-  },
-  {
     id: 'skin',
     title: 'High Profile Clientele',
     description: 'Exclusive grooming services for high-profile clients requiring discretion and excellence.',
@@ -40,6 +34,12 @@ const services: Service[] = [
     title: 'Sessions',
     description: 'Extended grooming sessions for complete transformations and relaxation.',
     price: 120,
+  },
+  {
+    id: 'cleanup',
+    title: 'Clean Up',
+    description: 'Quick neck and sideburn trim to keep you looking sharp between cuts.',
+    price: 25,
   }
 ];
 
@@ -69,16 +69,33 @@ export default function Services() {
   const { state, toggleService, setLocationType, setClientType, setAgeGroup, setDate, setTime, setBarber, setAddress, setMonth, totalPrice, isOvertime, isSunday, isDayOffFee, otFee } = useBooking();
   
   const [barberIndex, setBarberIndex] = React.useState(0);
-  const [leftClicks, setLeftClicks] = React.useState(0);
-  const [rightClicks, setRightClicks] = React.useState(0);
+  const [directionBarber, setDirectionBarber] = React.useState(0);
 
   const [serviceRow1Index, setServiceRow1Index] = React.useState(0);
-  const [leftClicksRow1, setLeftClicksRow1] = React.useState(0);
-  const [rightClicksRow1, setRightClicksRow1] = React.useState(0);
+  const [directionRow1, setDirectionRow1] = React.useState(0);
 
   const [serviceRow2Index, setServiceRow2Index] = React.useState(0);
-  const [leftClicksRow2, setLeftClicksRow2] = React.useState(0);
-  const [rightClicksRow2, setRightClicksRow2] = React.useState(0);
+  const [directionRow2, setDirectionRow2] = React.useState(0);
+
+  const paginateBarber = (newDirection: number) => {
+    setDirectionBarber(newDirection);
+    setBarberIndex((prev) => (prev + newDirection + barbers.length) % barbers.length);
+  };
+
+  const paginateRow1 = (newDirection: number) => {
+    setDirectionRow1(newDirection);
+    setServiceRow1Index((prev) => (prev + newDirection + 4) % 4);
+  };
+
+  const paginateRow2 = (newDirection: number) => {
+    setDirectionRow2(newDirection);
+    setServiceRow2Index((prev) => (prev + newDirection + 4) % 4);
+  };
+
+  const swipeConfidenceThreshold = 10000;
+  const swipePower = (offset: number, velocity: number) => {
+    return Math.abs(offset) * velocity;
+  };
   
   const now = new Date();
   const currentMonth = now.getMonth();
@@ -336,319 +353,301 @@ export default function Services() {
         </AnimatePresence>
 
         {/* Services Row 1 */}
-        <div className="relative w-full max-w-5xl mx-auto flex items-center justify-center mb-12">
-          <button 
-            onClick={() => {
-              setLeftClicksRow1(c => c + 1);
-              setServiceRow1Index(prev => (prev === 0 ? 2 : prev - 1));
+        <div className="relative w-full max-w-5xl mx-auto flex flex-col items-center justify-center mb-12">
+          <motion.div 
+            drag="x"
+            dragConstraints={{ left: 0, right: 0 }}
+            dragElastic={1}
+            onDragEnd={(e, { offset, velocity }) => {
+              const swipe = swipePower(offset.x, velocity.x);
+              if (swipe < -swipeConfidenceThreshold) {
+                paginateRow1(1);
+              } else if (swipe > swipeConfidenceThreshold) {
+                paginateRow1(-1);
+              }
             }}
-            className="absolute left-0 md:-left-4 z-20 p-2 glass rounded-full hover:bg-white/10 transition-colors"
+            className="flex items-center justify-center gap-4 md:gap-8 overflow-hidden w-full px-4 md:px-12 py-8 cursor-grab active:cursor-grabbing min-h-[400px]"
           >
-            <motion.div
-              key={leftClicksRow1}
-              initial={{ color: "#ffffff", scale: 1, filter: "drop-shadow(0 0 0px #00ff00)" }}
-              animate={leftClicksRow1 > 0 ? { 
-                color: ["#ffffff", "#00ff00", "#ffffff", "#808080", "#00ff00", "#ffffff", "#ffffff"],
-                scale: [1, 1.6, 0.7, 1.4, 0.8, 1.2, 1],
-                x: [0, -8, 8, -4, 4, -2, 0],
-                y: [0, 4, -4, 2, -2, 1, 0],
-                skewX: [0, 30, -30, 15, -15, 5, 0],
-                opacity: [1, 0, 1, 0.2, 1, 0.5, 1],
-                filter: [
-                  "drop-shadow(0 0 0px #00ff00)",
-                  "drop-shadow(0 0 40px #00ff00)",
-                  "drop-shadow(0 0 10px #ffffff)",
-                  "drop-shadow(0 0 50px #00ff00)",
-                  "drop-shadow(0 0 20px #808080)",
-                  "drop-shadow(0 0 30px #00ff00)",
-                  "drop-shadow(0 0 0px #00ff00)"
-                ]
-              } : { color: "#ffffff" }}
-              transition={{ duration: 0.5, ease: "easeInOut" }}
-            >
-              <ChevronLeft size={24} />
-            </motion.div>
-          </button>
+            <AnimatePresence initial={false} custom={directionRow1} mode="popLayout">
+              {[-1, 0, 1].map((offset) => {
+                let index = (serviceRow1Index + offset) % 4;
+                if (index < 0) index += 4;
+                const service = services[index]; // 0, 1, 2, 3
+                const isCenter = offset === 0;
+                
+                const Icon = serviceIcons[service.id];
+                const isSelected = state.selectedServices.some(s => s.id === service.id);
+                
+                const exclusiveIds = ['hair', 'skin', 'urban', 'hairstyle'];
+                const selectedExclusive = state.selectedServices.find(s => exclusiveIds.includes(s.id));
+                const isRestricted = exclusiveIds.includes(service.id) && selectedExclusive && selectedExclusive.id !== service.id;
 
-          <div className="flex items-center justify-center gap-4 md:gap-8 overflow-hidden w-full px-12 py-8">
-            {[-1, 0, 1].map((offset) => {
-              let index = (serviceRow1Index + offset) % 3;
-              if (index < 0) index += 3;
-              const service = services[index]; // 0, 1, 2
-              const isCenter = offset === 0;
-              
-              const Icon = serviceIcons[service.id];
-              const isSelected = state.selectedServices.some(s => s.id === service.id);
-              
-              const exclusiveIds = ['hair', 'skin', 'urban', 'hairstyle'];
-              const selectedExclusive = state.selectedServices.find(s => exclusiveIds.includes(s.id));
-              const isRestricted = exclusiveIds.includes(service.id) && selectedExclusive && selectedExclusive.id !== service.id;
-
-              return (
-                <button
-                  key={`${service.id}-${offset}`}
-                  onClick={() => {
-                    if (isCenter) {
-                      if (isRestricted) return;
-                      toggleService(service);
-                      if (service.id === 'skin' && !state.selectedServices.some(s => s.id === 'skin')) {
-                        setClientType('walk-in');
+                return (
+                  <motion.div
+                    layout
+                    key={service.id}
+                    custom={directionRow1}
+                    initial={{ 
+                      x: directionRow1 > 0 ? 100 : -100, 
+                      opacity: 0,
+                      scale: 0.8
+                    }}
+                    animate={{ 
+                      x: 0, 
+                      opacity: isCenter ? 1 : 0.3,
+                      scale: isCenter ? 1 : 0.9,
+                      filter: isCenter ? "blur(0px)" : "blur(2px)"
+                    }}
+                    exit={{ 
+                      x: directionRow1 < 0 ? 100 : -100, 
+                      opacity: 0,
+                      scale: 0.8,
+                      filter: "blur(4px)"
+                    }}
+                    transition={{ duration: 0.4, ease: "easeInOut" }}
+                    onClick={() => {
+                      if (isCenter) {
+                        if (isRestricted) return;
+                        toggleService(service);
+                        if (service.id === 'skin' && !state.selectedServices.some(s => s.id === 'skin')) {
+                          setClientType('walk-in');
+                        }
+                      } else if (offset === -1) {
+                        paginateRow1(-1);
+                      } else {
+                        paginateRow1(1);
                       }
-                    } else if (offset === -1) {
-                      setLeftClicksRow1(c => c + 1);
-                      setServiceRow1Index(prev => (prev === 0 ? 2 : prev - 1));
-                    } else {
-                      setRightClicksRow1(c => c + 1);
-                      setServiceRow1Index(prev => (prev + 1) % 3);
-                    }
-                  }}
-                  className={cn(
-                    "relative flex flex-col transition-all duration-500 text-left",
-                    isCenter ? "w-full max-w-sm opacity-100 scale-100 z-10" : "w-64 opacity-30 scale-90 blur-[2px] hidden md:flex",
-                    isRestricted ? "cursor-not-allowed" : "cursor-pointer"
-                  )}
-                >
-                  <div className={cn(
-                    "glass p-8 rounded-3xl transition-all relative overflow-hidden group w-full h-full",
-                    isRestricted ? "border-red-500/30" : "",
-                    isSelected && isCenter ? "border-brand-green bg-brand-green/5 ring-2 ring-brand-green ring-offset-4 ring-offset-black" : (!isRestricted && "hover:border-white/20")
-                  )}>
-                    {isRestricted && (
-                      <div className="absolute inset-0 bg-red-950/60 z-10 pointer-events-none" />
+                    }}
+                    className={cn(
+                      "relative flex flex-col text-left shrink-0",
+                      isCenter ? "w-full max-w-sm z-10" : "w-64 hidden md:flex z-0",
+                      isRestricted ? "cursor-not-allowed" : "cursor-pointer"
                     )}
-                    <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity">
-                      <Icon size={80} />
-                    </div>
-                    <div className="flex justify-between items-start mb-6">
-                      <Icon className={cn(isSelected ? "text-brand-green" : "text-white/40")} size={32} />
-                      {isSelected && <Check className="text-brand-green" size={20} />}
-                    </div>
-                    <h3 className="text-2xl font-bold uppercase mb-2">{service.title}</h3>
-                    <p className="text-white/40 text-sm mb-6 line-clamp-2">{service.description}</p>
-                    <div className="flex items-center justify-between mt-auto">
-                      <span className="text-xl font-bold text-brand-green">
-                        {state.locationType === 'mobile' ? (
-                          service.id === 'hair' ? `$${state.ageGroup === 'kids' ? 150 : 250}` :
-                          service.id === 'hairstyle' ? `$${state.ageGroup === 'kids' ? 200 : 300}` :
-                          service.id === 'urban' ? `$${state.ageGroup === 'kids' ? 325 : 450}` :
-                          service.id === 'skin' ? '$1000' :
-                          `$${service.price}`
-                        ) : state.clientType === 'member' && ['hair', 'hairstyle', 'urban'].includes(service.id) ? (
-                          '$0'
-                        ) : service.id === 'hair' ? (
-                          `$${state.ageGroup === 'kids' ? 50 : 100}`
-                        ) : service.id === 'hairstyle' ? (
-                          `$${state.ageGroup === 'kids' ? 75 : 125}`
-                        ) : service.id === 'urban' ? (
-                          `$${state.ageGroup === 'kids' ? 100 : 150}`
-                        ) : service.id === 'skin' ? (
-                          '$500'
-                        ) : (
-                          `$${service.price}`
-                        )}
-                      </span>
-                      {isSelected && state.clientType === 'member' && ['hair', 'hairstyle', 'urban'].includes(service.id) && state.memberId && (
-                        <span className="text-[10px] uppercase tracking-widest text-brand-green border border-brand-green/30 px-2 py-1 rounded-md">
-                          ID: {state.memberId}
-                        </span>
+                  >
+                    <div className={cn(
+                      "glass p-8 rounded-3xl transition-all relative overflow-hidden group w-full h-full",
+                      isRestricted ? "border-red-500/30" : "",
+                      isSelected && isCenter ? "border-brand-green bg-brand-green/5 ring-2 ring-brand-green ring-offset-4 ring-offset-black" : (!isRestricted && "hover:border-white/20")
+                    )}>
+                      {isRestricted && (
+                        <div className="absolute inset-0 bg-red-950/60 z-10 pointer-events-none" />
                       )}
+                      <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity">
+                        <Icon size={80} />
+                      </div>
+                      <div className="flex justify-between items-start mb-6">
+                        <Icon className={cn(isSelected ? "text-brand-green" : "text-white/40")} size={32} />
+                        {isSelected && <Check className="text-brand-green" size={20} />}
+                      </div>
+                      <h3 className="text-2xl font-bold uppercase mb-2">{service.title}</h3>
+                      <p className="text-white/40 text-sm mb-6 line-clamp-2">{service.description}</p>
+                      <div className="flex items-center justify-between mt-auto">
+                        <span className="text-xl font-bold text-brand-green">
+                          {state.locationType === 'mobile' ? (
+                            service.id === 'hair' ? `$${state.ageGroup === 'kids' ? 150 : 250}` :
+                            service.id === 'hairstyle' ? `$${state.ageGroup === 'kids' ? 200 : 300}` :
+                            service.id === 'urban' ? `$${state.ageGroup === 'kids' ? 325 : 450}` :
+                            service.id === 'skin' ? '$1000' :
+                            `$${service.price}`
+                          ) : state.clientType === 'member' && ['hair', 'hairstyle', 'urban'].includes(service.id) ? (
+                            '$0'
+                          ) : service.id === 'hair' ? (
+                            `$${state.ageGroup === 'kids' ? 50 : 100}`
+                          ) : service.id === 'hairstyle' ? (
+                            `$${state.ageGroup === 'kids' ? 75 : 125}`
+                          ) : service.id === 'urban' ? (
+                            `$${state.ageGroup === 'kids' ? 100 : 150}`
+                          ) : service.id === 'skin' ? (
+                            '$500'
+                          ) : (
+                            `$${service.price}`
+                          )}
+                        </span>
+                        {isSelected && state.clientType === 'member' && ['hair', 'hairstyle', 'urban'].includes(service.id) && state.memberId && (
+                          <span className="text-[10px] uppercase tracking-widest text-brand-green border border-brand-green/30 px-2 py-1 rounded-md">
+                            ID: {state.memberId}
+                          </span>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
+                  </motion.div>
+                );
+              })}
+            </AnimatePresence>
+          </motion.div>
 
-          <button 
-            onClick={() => {
-              setRightClicksRow1(c => c + 1);
-              setServiceRow1Index(prev => (prev + 1) % 3);
-            }}
-            className="absolute right-0 md:-right-4 z-20 p-2 glass rounded-full hover:bg-white/10 transition-colors"
-          >
-            <motion.div
-              key={rightClicksRow1}
-              initial={{ color: "#ffffff", scale: 1, filter: "drop-shadow(0 0 0px #00ff00)" }}
-              animate={rightClicksRow1 > 0 ? { 
-                color: ["#ffffff", "#00ff00", "#ffffff", "#808080", "#00ff00", "#ffffff", "#ffffff"],
-                scale: [1, 1.6, 0.7, 1.4, 0.8, 1.2, 1],
-                x: [0, 8, -8, 4, -4, 2, 0],
-                y: [0, 4, -4, 2, -2, 1, 0],
-                skewX: [0, -30, 30, -15, 15, -5, 0],
-                opacity: [1, 0, 1, 0.2, 1, 0.5, 1],
-                filter: [
-                  "drop-shadow(0 0 0px #00ff00)",
-                  "drop-shadow(0 0 40px #00ff00)",
-                  "drop-shadow(0 0 10px #ffffff)",
-                  "drop-shadow(0 0 50px #00ff00)",
-                  "drop-shadow(0 0 20px #808080)",
-                  "drop-shadow(0 0 30px #00ff00)",
-                  "drop-shadow(0 0 0px #00ff00)"
-                ]
-              } : { color: "#ffffff" }}
-              transition={{ duration: 0.5, ease: "easeInOut" }}
-            >
-              <ChevronRight size={24} />
-            </motion.div>
-          </button>
+          {/* 4 Dashes Pagination */}
+          <div className="flex justify-center gap-2 mt-4">
+            {[0, 1, 2, 3].map((idx) => (
+              <button
+                key={idx}
+                onClick={() => {
+                  setDirectionRow1(idx > serviceRow1Index ? 1 : -1);
+                  setServiceRow1Index(idx);
+                }}
+                className={cn(
+                  "h-1 rounded-full transition-all duration-300",
+                  serviceRow1Index === idx ? "w-8 bg-brand-green" : "w-4 bg-brand-green/20 hover:bg-brand-green/40"
+                )}
+              />
+            ))}
+          </div>
         </div>
 
         {/* Services Row 2 */}
-        <div className="relative w-full max-w-5xl mx-auto flex items-center justify-center mb-16">
-          <button 
-            onClick={() => {
-              setLeftClicksRow2(c => c + 1);
-              setServiceRow2Index(prev => (prev === 0 ? 2 : prev - 1));
+        <div className="relative w-full max-w-5xl mx-auto flex flex-col items-center justify-center mb-16">
+          <motion.div 
+            drag="x"
+            dragConstraints={{ left: 0, right: 0 }}
+            dragElastic={1}
+            onDragEnd={(e, { offset, velocity }) => {
+              const swipe = swipePower(offset.x, velocity.x);
+              if (swipe < -swipeConfidenceThreshold) {
+                paginateRow2(1);
+              } else if (swipe > swipeConfidenceThreshold) {
+                paginateRow2(-1);
+              }
             }}
-            className="absolute left-0 md:-left-4 z-20 p-2 glass rounded-full hover:bg-white/10 transition-colors"
+            className="flex items-center justify-center gap-4 md:gap-8 overflow-hidden w-full px-4 md:px-12 py-8 cursor-grab active:cursor-grabbing min-h-[400px]"
           >
-            <motion.div
-              key={leftClicksRow2}
-              initial={{ color: "#ffffff", scale: 1, filter: "drop-shadow(0 0 0px #00ff00)" }}
-              animate={leftClicksRow2 > 0 ? { 
-                color: ["#ffffff", "#00ff00", "#ffffff", "#808080", "#00ff00", "#ffffff", "#ffffff"],
-                scale: [1, 1.6, 0.7, 1.4, 0.8, 1.2, 1],
-                x: [0, -8, 8, -4, 4, -2, 0],
-                y: [0, 4, -4, 2, -2, 1, 0],
-                skewX: [0, 30, -30, 15, -15, 5, 0],
-                opacity: [1, 0, 1, 0.2, 1, 0.5, 1],
-                filter: [
-                  "drop-shadow(0 0 0px #00ff00)",
-                  "drop-shadow(0 0 40px #00ff00)",
-                  "drop-shadow(0 0 10px #ffffff)",
-                  "drop-shadow(0 0 50px #00ff00)",
-                  "drop-shadow(0 0 20px #808080)",
-                  "drop-shadow(0 0 30px #00ff00)",
-                  "drop-shadow(0 0 0px #00ff00)"
-                ]
-              } : { color: "#ffffff" }}
-              transition={{ duration: 0.5, ease: "easeInOut" }}
-            >
-              <ChevronLeft size={24} />
-            </motion.div>
-          </button>
+            <AnimatePresence initial={false} custom={directionRow2} mode="popLayout">
+              {[-1, 0, 1].map((offset) => {
+                const row2Base = [services[4], services[5]];
+                const row2Services = [
+                  row2Base[0], 
+                  row2Base[1], 
+                  { ...row2Base[0], id: row2Base[0].id + '-copy' }, 
+                  { ...row2Base[1], id: row2Base[1].id + '-copy' }
+                ];
+                
+                let index = (serviceRow2Index + offset) % 4;
+                if (index < 0) index += 4;
+                const service = row2Services[index];
+                const isCenter = offset === 0;
+                
+                const originalId = service.id.replace('-copy', '');
+                const originalService = services.find(s => s.id === originalId)!;
+                
+                const Icon = serviceIcons[originalId];
+                const isSelected = state.selectedServices.some(s => s.id === originalId);
+                
+                const exclusiveIds = ['hair', 'skin', 'urban', 'hairstyle'];
+                const selectedExclusive = state.selectedServices.find(s => exclusiveIds.includes(s.id));
+                const isRestricted = exclusiveIds.includes(originalId) && selectedExclusive && selectedExclusive.id !== originalId;
 
-          <div className="flex items-center justify-center gap-4 md:gap-8 overflow-hidden w-full px-12 py-8">
-            {[-1, 0, 1].map((offset) => {
-              let index = (serviceRow2Index + offset) % 3;
-              if (index < 0) index += 3;
-              const service = services[index + 3]; // 3, 4, 5
-              const isCenter = offset === 0;
-              
-              const Icon = serviceIcons[service.id];
-              const isSelected = state.selectedServices.some(s => s.id === service.id);
-              
-              const exclusiveIds = ['hair', 'skin', 'urban', 'hairstyle'];
-              const selectedExclusive = state.selectedServices.find(s => exclusiveIds.includes(s.id));
-              const isRestricted = exclusiveIds.includes(service.id) && selectedExclusive && selectedExclusive.id !== service.id;
+                return (
+                  <motion.div
+                    layout
+                    key={service.id}
+                    custom={directionRow2}
+                    initial={{ 
+                      x: directionRow2 > 0 ? 100 : -100, 
+                      opacity: 0,
+                      scale: 0.8
+                    }}
+                    animate={{ 
+                      x: 0, 
+                      opacity: isCenter ? 1 : 0.3,
+                      scale: isCenter ? 1 : 0.9,
+                      filter: isCenter ? "blur(0px)" : "blur(2px)"
+                    }}
+                    exit={{ 
+                      x: directionRow2 < 0 ? 100 : -100, 
+                      opacity: 0,
+                      scale: 0.8,
+                      filter: "blur(4px)"
+                    }}
+                    transition={{ duration: 0.4, ease: "easeInOut" }}
+                    onClick={() => {
+                      if (isCenter) {
+                        if (isRestricted) return;
+                        toggleService(originalService);
+                        if (originalId === 'skin' && !state.selectedServices.some(s => s.id === 'skin')) {
+                          setClientType('walk-in');
+                        }
+                      } else if (offset === -1) {
+                        paginateRow2(-1);
+                      } else {
+                        paginateRow2(1);
+                      }
+                    }}
+                    className={cn(
+                      "relative flex flex-col text-left shrink-0",
+                      isCenter ? "w-full max-w-sm z-10" : "w-64 hidden md:flex z-0",
+                      isRestricted ? "cursor-not-allowed" : "cursor-pointer"
+                    )}
+                  >
+                    <div className={cn(
+                      "glass p-8 rounded-3xl transition-all relative overflow-hidden group w-full h-full",
+                      isRestricted ? "border-red-500/30" : "",
+                      isSelected && isCenter ? "border-brand-green bg-brand-green/5 ring-2 ring-brand-green ring-offset-4 ring-offset-black" : (!isRestricted && "hover:border-white/20")
+                    )}>
+                      {isRestricted && (
+                        <div className="absolute inset-0 bg-red-950/60 z-10 pointer-events-none" />
+                      )}
+                      <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity">
+                        <Icon size={80} />
+                      </div>
+                      <div className="flex justify-between items-start mb-6">
+                        <Icon className={cn(isSelected ? "text-brand-green" : "text-white/40")} size={32} />
+                        {isSelected && <Check className="text-brand-green" size={20} />}
+                      </div>
+                      <h3 className="text-2xl font-bold uppercase mb-2">{originalService.title}</h3>
+                      <p className="text-white/40 text-sm mb-6 line-clamp-2">{originalService.description}</p>
+                      <div className="flex items-center justify-between mt-auto">
+                        <span className="text-xl font-bold text-brand-green">
+                          {state.locationType === 'mobile' ? (
+                            originalId === 'hair' ? `$${state.ageGroup === 'kids' ? 150 : 250}` :
+                            originalId === 'hairstyle' ? `$${state.ageGroup === 'kids' ? 200 : 300}` :
+                            originalId === 'urban' ? `$${state.ageGroup === 'kids' ? 325 : 450}` :
+                            originalId === 'skin' ? '$1000' :
+                            `$${originalService.price}`
+                          ) : state.clientType === 'member' && ['hair', 'hairstyle', 'urban'].includes(originalId) ? (
+                            '$0'
+                          ) : originalId === 'hair' ? (
+                            `$${state.ageGroup === 'kids' ? 50 : 100}`
+                          ) : originalId === 'hairstyle' ? (
+                            `$${state.ageGroup === 'kids' ? 75 : 125}`
+                          ) : originalId === 'urban' ? (
+                            `$${state.ageGroup === 'kids' ? 100 : 150}`
+                          ) : originalId === 'skin' ? (
+                            '$500'
+                          ) : (
+                            `$${originalService.price}`
+                          )}
+                        </span>
+                        {isSelected && state.clientType === 'member' && ['hair', 'hairstyle', 'urban'].includes(originalId) && state.memberId && (
+                          <span className="text-[10px] uppercase tracking-widest text-brand-green border border-brand-green/30 px-2 py-1 rounded-md">
+                            ID: {state.memberId}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </AnimatePresence>
+          </motion.div>
 
+          {/* 2 Dashes Pagination */}
+          <div className="flex justify-center gap-2 mt-4">
+            {[0, 1].map((idx) => {
+              const isActive = (serviceRow2Index % 2) === idx;
               return (
                 <button
-                  key={`${service.id}-${offset}`}
+                  key={idx}
                   onClick={() => {
-                    if (isCenter) {
-                      if (isRestricted) return;
-                      toggleService(service);
-                      if (service.id === 'skin' && !state.selectedServices.some(s => s.id === 'skin')) {
-                        setClientType('walk-in');
-                      }
-                    } else if (offset === -1) {
-                      setLeftClicksRow2(c => c + 1);
-                      setServiceRow2Index(prev => (prev === 0 ? 2 : prev - 1));
-                    } else {
-                      setRightClicksRow2(c => c + 1);
-                      setServiceRow2Index(prev => (prev + 1) % 3);
-                    }
+                    setDirectionRow2(idx > (serviceRow2Index % 2) ? 1 : -1);
+                    setServiceRow2Index(idx);
                   }}
                   className={cn(
-                    "relative flex flex-col transition-all duration-500 text-left",
-                    isCenter ? "w-full max-w-sm opacity-100 scale-100 z-10" : "w-64 opacity-30 scale-90 blur-[2px] hidden md:flex",
-                    isRestricted ? "cursor-not-allowed" : "cursor-pointer"
+                    "h-1 rounded-full transition-all duration-300",
+                    isActive ? "w-8 bg-brand-green" : "w-4 bg-brand-green/20 hover:bg-brand-green/40"
                   )}
-                >
-                  <div className={cn(
-                    "glass p-8 rounded-3xl transition-all relative overflow-hidden group w-full h-full",
-                    isRestricted ? "border-red-500/30" : "",
-                    isSelected && isCenter ? "border-brand-green bg-brand-green/5 ring-2 ring-brand-green ring-offset-4 ring-offset-black" : (!isRestricted && "hover:border-white/20")
-                  )}>
-                    {isRestricted && (
-                      <div className="absolute inset-0 bg-red-950/60 z-10 pointer-events-none" />
-                    )}
-                    <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity">
-                      <Icon size={80} />
-                    </div>
-                    <div className="flex justify-between items-start mb-6">
-                      <Icon className={cn(isSelected ? "text-brand-green" : "text-white/40")} size={32} />
-                      {isSelected && <Check className="text-brand-green" size={20} />}
-                    </div>
-                    <h3 className="text-2xl font-bold uppercase mb-2">{service.title}</h3>
-                    <p className="text-white/40 text-sm mb-6 line-clamp-2">{service.description}</p>
-                    <div className="flex items-center justify-between mt-auto">
-                      <span className="text-xl font-bold text-brand-green">
-                        {state.locationType === 'mobile' ? (
-                          service.id === 'hair' ? `$${state.ageGroup === 'kids' ? 150 : 250}` :
-                          service.id === 'hairstyle' ? `$${state.ageGroup === 'kids' ? 200 : 300}` :
-                          service.id === 'urban' ? `$${state.ageGroup === 'kids' ? 325 : 450}` :
-                          service.id === 'skin' ? '$1000' :
-                          `$${service.price}`
-                        ) : state.clientType === 'member' && ['hair', 'hairstyle', 'urban'].includes(service.id) ? (
-                          '$0'
-                        ) : service.id === 'hair' ? (
-                          `$${state.ageGroup === 'kids' ? 50 : 100}`
-                        ) : service.id === 'hairstyle' ? (
-                          `$${state.ageGroup === 'kids' ? 75 : 125}`
-                        ) : service.id === 'urban' ? (
-                          `$${state.ageGroup === 'kids' ? 100 : 150}`
-                        ) : service.id === 'skin' ? (
-                          '$500'
-                        ) : (
-                          `$${service.price}`
-                        )}
-                      </span>
-                      {isSelected && state.clientType === 'member' && ['hair', 'hairstyle', 'urban'].includes(service.id) && state.memberId && (
-                        <span className="text-[10px] uppercase tracking-widest text-brand-green border border-brand-green/30 px-2 py-1 rounded-md">
-                          ID: {state.memberId}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </button>
+                />
               );
             })}
           </div>
-
-          <button 
-            onClick={() => {
-              setRightClicksRow2(c => c + 1);
-              setServiceRow2Index(prev => (prev + 1) % 3);
-            }}
-            className="absolute right-0 md:-right-4 z-20 p-2 glass rounded-full hover:bg-white/10 transition-colors"
-          >
-            <motion.div
-              key={rightClicksRow2}
-              initial={{ color: "#ffffff", scale: 1, filter: "drop-shadow(0 0 0px #00ff00)" }}
-              animate={rightClicksRow2 > 0 ? { 
-                color: ["#ffffff", "#00ff00", "#ffffff", "#808080", "#00ff00", "#ffffff", "#ffffff"],
-                scale: [1, 1.6, 0.7, 1.4, 0.8, 1.2, 1],
-                x: [0, 8, -8, 4, -4, 2, 0],
-                y: [0, 4, -4, 2, -2, 1, 0],
-                skewX: [0, -30, 30, -15, 15, -5, 0],
-                opacity: [1, 0, 1, 0.2, 1, 0.5, 1],
-                filter: [
-                  "drop-shadow(0 0 0px #00ff00)",
-                  "drop-shadow(0 0 40px #00ff00)",
-                  "drop-shadow(0 0 10px #ffffff)",
-                  "drop-shadow(0 0 50px #00ff00)",
-                  "drop-shadow(0 0 20px #808080)",
-                  "drop-shadow(0 0 30px #00ff00)",
-                  "drop-shadow(0 0 0px #00ff00)"
-                ]
-              } : { color: "#ffffff" }}
-              transition={{ duration: 0.5, ease: "easeInOut" }}
-            >
-              <ChevronRight size={24} />
-            </motion.div>
-          </button>
         </div>
 
         <div className="space-y-12 mb-24">
@@ -833,115 +832,112 @@ export default function Services() {
               <h3 className="text-xl font-bold uppercase tracking-tighter">Select Barber</h3>
             </div>
             
-            <div className="relative w-full max-w-3xl mx-auto flex items-center justify-center">
-              <button 
-                onClick={() => {
-                  setLeftClicks(c => c + 1);
-                  setBarberIndex(prev => (prev === 0 ? barbers.length - 1 : prev - 1));
+            <div className="relative w-full max-w-3xl mx-auto flex flex-col items-center justify-center">
+              <motion.div
+                drag="x"
+                dragConstraints={{ left: 0, right: 0 }}
+                dragElastic={1}
+                onDragEnd={(e, { offset, velocity }) => {
+                  const swipe = swipePower(offset.x, velocity.x);
+                  if (swipe < -swipeConfidenceThreshold) {
+                    paginateBarber(1);
+                  } else if (swipe > swipeConfidenceThreshold) {
+                    paginateBarber(-1);
+                  }
                 }}
-                className="absolute left-0 z-20 p-2 glass rounded-full hover:bg-white/10 transition-colors"
+                className="flex items-center justify-center gap-4 overflow-hidden w-full px-4 md:px-12 py-4 cursor-grab active:cursor-grabbing min-h-[300px]"
               >
-                <motion.div
-                  key={leftClicks}
-                  initial={{ color: "#ffffff", scale: 1, filter: "drop-shadow(0 0 0px #00ff00)" }}
-                  animate={leftClicks > 0 ? { 
-                    color: ["#ffffff", "#00ff00", "#ffffff", "#808080", "#00ff00", "#ffffff", "#ffffff"],
-                    scale: [1, 1.6, 0.7, 1.4, 0.8, 1.2, 1],
-                    x: [0, -8, 8, -4, 4, -2, 0],
-                    y: [0, 4, -4, 2, -2, 1, 0],
-                    skewX: [0, 30, -30, 15, -15, 5, 0],
-                    opacity: [1, 0, 1, 0.2, 1, 0.5, 1],
-                    filter: [
-                      "drop-shadow(0 0 0px #00ff00)",
-                      "drop-shadow(0 0 40px #00ff00)",
-                      "drop-shadow(0 0 10px #ffffff)",
-                      "drop-shadow(0 0 50px #00ff00)",
-                      "drop-shadow(0 0 20px #808080)",
-                      "drop-shadow(0 0 30px #00ff00)",
-                      "drop-shadow(0 0 0px #00ff00)"
-                    ]
-                  } : { color: "#ffffff" }}
-                  transition={{ duration: 0.5, ease: "easeInOut" }}
-                >
-                  <ChevronLeft size={24} />
-                </motion.div>
-              </button>
+                <AnimatePresence initial={false} custom={directionBarber} mode="popLayout">
+                  {[-1, 0, 1].map((offset) => {
+                    let index = (barberIndex + offset) % barbers.length;
+                    if (index < 0) index += barbers.length;
+                    const barber = barbers[index];
+                    const isCenter = offset === 0;
+                    const isSelected = state.barber === barber.id;
 
-              <div className="flex items-center justify-center gap-4 overflow-hidden w-full px-12 py-4">
-                {[-1, 0, 1].map((offset) => {
-                  let index = (barberIndex + offset) % barbers.length;
-                  if (index < 0) index += barbers.length;
-                  const barber = barbers[index];
-                  const isCenter = offset === 0;
-                  const isSelected = state.barber === barber.id;
+                    return (
+                      <motion.div
+                        layout
+                        key={barber.id}
+                        custom={directionBarber}
+                        initial={{ 
+                          x: directionBarber > 0 ? 100 : -100, 
+                          opacity: 0,
+                          scale: 0.8
+                        }}
+                        animate={{ 
+                          x: 0, 
+                          opacity: isCenter ? 1 : 0.3,
+                          scale: isCenter ? 1 : 0.9,
+                          filter: isCenter ? "blur(0px)" : "blur(2px)"
+                        }}
+                        exit={{ 
+                          x: directionBarber < 0 ? 100 : -100, 
+                          opacity: 0,
+                          scale: 0.8,
+                          filter: "blur(4px)"
+                        }}
+                        transition={{ duration: 0.4, ease: "easeInOut" }}
+                        onClick={() => {
+                          if (isCenter) {
+                            setBarber(barber.id);
+                          } else if (offset === -1) {
+                            paginateBarber(-1);
+                          } else {
+                            paginateBarber(1);
+                          }
+                        }}
+                        className={cn(
+                          "relative flex flex-col items-center gap-4 shrink-0 cursor-pointer",
+                          isCenter ? "w-48 z-10" : "w-32 hidden sm:flex z-0",
+                          isSelected && isCenter ? "ring-2 ring-brand-green ring-offset-4 ring-offset-black rounded-2xl" : ""
+                        )}
+                      >
+                        <div className="relative w-full aspect-[3/4] rounded-2xl overflow-hidden bg-black">
+                          <img 
+                            src={barber.image} 
+                            alt={barber.name}
+                            className="w-full h-full object-cover grayscale contrast-[1.2] brightness-90 mix-blend-screen"
+                            referrerPolicy="no-referrer"
+                          />
+                          <div className="absolute inset-0 shadow-[inset_0_0_40px_20px_black] pointer-events-none" />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent pointer-events-none" />
+                          
+                          {isCenter && (
+                            <div className="absolute bottom-0 left-0 right-0 p-4 text-center z-20">
+                              <h4 className="text-lg font-bold uppercase tracking-widest text-white mb-1">{barber.name}</h4>
+                              <p className="text-[10px] uppercase tracking-widest text-brand-green">
+                                {state.date ? new Date(state.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'Select Date'}
+                                {state.time ? ` @ ${state.time}` : ''}
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </AnimatePresence>
+              </motion.div>
 
+              {/* Dashes Pagination */}
+              <div className="flex justify-center gap-2 mt-4 flex-wrap">
+                {barbers.map((_, idx) => {
+                  const isActive = (barberIndex % barbers.length) === idx;
                   return (
                     <button
-                      key={`${barber.id}-${offset}`}
-                      onClick={() => setBarber(barber.id)}
+                      key={idx}
+                      onClick={() => {
+                        setDirectionBarber(idx > (barberIndex % barbers.length) ? 1 : -1);
+                        setBarberIndex(idx);
+                      }}
                       className={cn(
-                        "relative flex flex-col items-center gap-4 transition-all duration-500",
-                        isCenter ? "w-48 opacity-100 scale-110 z-10" : "w-32 opacity-30 scale-90 blur-[2px]",
-                        isSelected && isCenter ? "ring-2 ring-brand-green ring-offset-4 ring-offset-black rounded-2xl" : ""
+                        "h-1 rounded-full transition-all duration-300",
+                        isActive ? "w-8 bg-brand-green" : "w-4 bg-brand-green/20 hover:bg-brand-green/40"
                       )}
-                    >
-                      <div className="relative w-full aspect-[3/4] rounded-2xl overflow-hidden bg-black">
-                        <img 
-                          src={barber.image} 
-                          alt={barber.name}
-                          className="w-full h-full object-cover grayscale contrast-[1.2] brightness-90 mix-blend-screen"
-                          referrerPolicy="no-referrer"
-                        />
-                        <div className="absolute inset-0 shadow-[inset_0_0_40px_20px_black] pointer-events-none" />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent pointer-events-none" />
-                        
-                        {isCenter && (
-                          <div className="absolute bottom-0 left-0 right-0 p-4 text-center z-20">
-                            <h4 className="text-lg font-bold uppercase tracking-widest text-white mb-1">{barber.name}</h4>
-                            <p className="text-[10px] uppercase tracking-widest text-brand-green">
-                              {state.date ? new Date(state.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'Select Date'}
-                              {state.time ? ` @ ${state.time}` : ''}
-                            </p>
-                          </div>
-                        )}
-                      </div>
-                    </button>
+                    />
                   );
                 })}
               </div>
-
-              <button 
-                onClick={() => {
-                  setRightClicks(c => c + 1);
-                  setBarberIndex(prev => (prev === barbers.length - 1 ? 0 : prev + 1));
-                }}
-                className="absolute right-0 z-20 p-2 glass rounded-full hover:bg-white/10 transition-colors"
-              >
-                <motion.div
-                  key={rightClicks}
-                  initial={{ color: "#ffffff", scale: 1, filter: "drop-shadow(0 0 0px #00ff00)" }}
-                  animate={rightClicks > 0 ? { 
-                    color: ["#ffffff", "#00ff00", "#ffffff", "#808080", "#00ff00", "#ffffff", "#ffffff"],
-                    scale: [1, 1.6, 0.7, 1.4, 0.8, 1.2, 1],
-                    x: [0, 8, -8, 4, -4, 2, 0],
-                    y: [0, 4, -4, 2, -2, 1, 0],
-                    skewX: [0, -30, 30, -15, 15, -5, 0],
-                    opacity: [1, 0, 1, 0.2, 1, 0.5, 1],
-                    filter: [
-                      "drop-shadow(0 0 0px #00ff00)",
-                      "drop-shadow(0 0 40px #00ff00)",
-                      "drop-shadow(0 0 10px #ffffff)",
-                      "drop-shadow(0 0 50px #00ff00)",
-                      "drop-shadow(0 0 20px #808080)",
-                      "drop-shadow(0 0 30px #00ff00)",
-                      "drop-shadow(0 0 0px #00ff00)"
-                    ]
-                  } : { color: "#ffffff" }}
-                  transition={{ duration: 0.5, ease: "easeInOut" }}
-                >
-                  <ChevronRight size={24} />
-                </motion.div>
-              </button>
             </div>
           </div>
         </div>
