@@ -6,7 +6,7 @@ import { useAI } from '../lib/AIContext';
 
 export default function AIAgent() {
   const { 
-    isAIActive, setIsAIActive, messages, isListening, isSpeaking, setIsSpeaking, 
+    isAIActive, setIsAIActive, isChatBoxOpen, setIsChatBoxOpen, messages, isListening, isSpeaking, setIsSpeaking, 
     language, setLanguage, sendMessage, startListening 
   } = useAI();
   
@@ -28,7 +28,7 @@ export default function AIAgent() {
   return (
     <div className="fixed bottom-6 right-6 z-50">
       <AnimatePresence>
-        {isAIActive && (
+        {isAIActive && isChatBoxOpen && (
           <motion.div
             initial={{ opacity: 0, y: 20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -47,7 +47,7 @@ export default function AIAgent() {
                 <button onClick={() => setIsSpeaking(!isSpeaking)} className="hover:opacity-70" title="Toggle Voice">
                   {isSpeaking ? <Volume2 size={18} /> : <VolumeX size={18} />}
                 </button>
-                <button onClick={() => setIsAIActive(false)} className="hover:opacity-70">
+                <button onClick={() => setIsChatBoxOpen(false)} className="hover:opacity-70">
                   <X size={18} />
                 </button>
               </div>

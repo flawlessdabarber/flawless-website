@@ -653,7 +653,7 @@ export default function Services() {
         <div className="space-y-12 mb-24">
           {/* Month Selector */}
           <div>
-            <div className="flex items-center gap-2 mb-6">
+            <div className="flex items-center justify-center gap-2 mb-6">
               <CalendarIcon className="text-brand-green" size={20} />
               <h3 className="text-xl font-bold uppercase tracking-tighter">Select Month</h3>
             </div>
@@ -679,7 +679,7 @@ export default function Services() {
 
           {/* Date Selector */}
           <div>
-            <div className="flex items-center gap-2 mb-6">
+            <div className="flex items-center justify-center gap-2 mb-6">
               <CalendarIcon className="text-brand-green" size={20} />
               <h3 className="text-xl font-bold uppercase tracking-tighter">Select Date</h3>
             </div>
@@ -772,7 +772,7 @@ export default function Services() {
 
           {/* Time Selector */}
           <div>
-            <div className="flex items-center gap-2 mb-6">
+            <div className="flex items-center justify-center gap-2 mb-6">
               <Clock className="text-brand-green" size={20} />
               <h3 className="text-xl font-bold uppercase tracking-tighter">Select Time</h3>
             </div>
@@ -827,7 +827,7 @@ export default function Services() {
 
           {/* Barber Selector */}
           <div className="mt-12">
-            <div className="flex items-center gap-2 mb-6">
+            <div className="flex items-center justify-center gap-2 mb-6">
               <User className="text-brand-green" size={20} />
               <h3 className="text-xl font-bold uppercase tracking-tighter">Select Barber</h3>
             </div>

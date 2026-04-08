@@ -74,7 +74,7 @@ export default function Podcast() {
             className="text-center lg:text-left"
           >
             <span className="text-brand-green font-mono text-xs tracking-widest uppercase mb-4 block">YouTube Channel</span>
-            <h2 className="text-5xl md:text-7xl font-bold uppercase tracking-tighter leading-none mb-4">FDB <br /> Live</h2>
+            <h2 className="text-5xl md:text-7xl font-bold uppercase tracking-tighter leading-none mb-4">FDB Live</h2>
             
             <div className="font-bold uppercase tracking-widest text-sm mb-6">
               <span className={nextDay === 0 ? "text-brand-green animate-pulse drop-shadow-[0_0_20px_rgba(0,255,0,0.8)] brightness-150" : "text-gray-600"}>Sun</span> <span className="text-gray-600">|</span>{' '}

@@ -4,7 +4,8 @@ import { useAuthState } from 'react-firebase-hooks/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { UserProfile } from '../types';
 import { motion } from 'motion/react';
-import { Calendar, User, Settings, Package, Scissors, Users } from 'lucide-react';
+import { Calendar, User, Settings, Package, Scissors, Users, CalendarPlus } from 'lucide-react';
+import { generateICS } from '../lib/utils';
 
 export default function Dashboard() {
   const [user] = useAuthState(auth);
@@ -63,7 +64,22 @@ export default function Dashboard() {
               <p className="font-bold">John Smith</p>
               <p className="text-xs text-white/40">Skin Therapy • 2:00 PM</p>
             </div>
-            <span className="px-3 py-1 bg-brand-green text-black text-[10px] font-bold rounded-full">Confirmed</span>
+            <div className="flex items-center gap-4">
+              <span className="px-3 py-1 bg-brand-green text-black text-[10px] font-bold rounded-full">Confirmed</span>
+              <button 
+                onClick={() => generateICS({
+                  title: 'Skin Therapy with John Smith',
+                  description: 'Client Appointment',
+                  location: 'Flawless Da Barber Studio',
+                  startTime: new Date(new Date().setHours(14, 0, 0, 0)),
+                  endTime: new Date(new Date().setHours(15, 0, 0, 0))
+                })}
+                className="p-2 bg-white/10 hover:bg-brand-green hover:text-black rounded-lg transition-colors"
+                title="Add to Calendar"
+              >
+                <CalendarPlus size={16} />
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -85,7 +101,30 @@ export default function Dashboard() {
       </div>
       <div className="glass p-8 rounded-2xl">
         <h4 className="text-xl font-bold uppercase mb-6 flex items-center gap-2"><Scissors size={20} className="text-brand-green" /> My Bookings</h4>
-        <p className="text-white/40 text-sm">No upcoming appointments. Book one now!</p>
+        <div className="space-y-4">
+          <div className="flex justify-between items-center p-4 bg-white/5 rounded-xl">
+            <div>
+              <p className="font-bold">Hair Cut & Beard Trim</p>
+              <p className="text-xs text-white/40">April 15, 2026 • 2:00 PM</p>
+            </div>
+            <div className="flex items-center gap-4">
+              <span className="px-3 py-1 bg-brand-green text-black text-[10px] font-bold rounded-full">Confirmed</span>
+              <button 
+                onClick={() => generateICS({
+                  title: 'Hair Cut & Beard Trim at Flawless Da Barber',
+                  description: 'Appointment with Flawless Da Barber',
+                  location: 'Flawless Da Barber Studio',
+                  startTime: new Date('2026-04-15T14:00:00'),
+                  endTime: new Date('2026-04-15T15:00:00')
+                })}
+                className="p-2 bg-white/10 hover:bg-brand-green hover:text-black rounded-lg transition-colors"
+                title="Add to Calendar"
+              >
+                <CalendarPlus size={16} />
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
