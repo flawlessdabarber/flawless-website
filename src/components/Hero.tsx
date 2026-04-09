@@ -90,9 +90,9 @@ export default function Hero() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 1 }}
-            className="text-[10px] uppercase tracking-[0.3em] font-bold text-brand-green animate-pulse"
+            className="text-[15px] uppercase tracking-[0.3em] font-bold text-brand-green animate-pulse"
           >
-            Click to speak to AI
+            Book with AI
           </motion.p>
         </div>
 

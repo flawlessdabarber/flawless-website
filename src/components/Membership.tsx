@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Check, Crown, Briefcase, TrendingUp, User } from 'lucide-react';
+import { Check, Crown, Briefcase, TrendingUp, Baby } from 'lucide-react';
 import { useAI } from '../lib/AIContext';
 import { cn } from '../lib/utils';
 
@@ -61,7 +61,7 @@ export default function Membership() {
   const tiers = [
     {
       name: 'Kids',
-      icon: User,
+      icon: Baby,
       features: [`${routine} ${serviceType}s per month`, 'Priority booking', 'Complimentary drink'],
       description: 'Premium grooming for the next generation.'
     },
