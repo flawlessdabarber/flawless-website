@@ -11,8 +11,8 @@ export default function Footer() {
         
         <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-12 mb-24">
           <div className="lg:col-span-2">
-            <Link to="/" className="text-3xl font-bold uppercase tracking-tighter flex items-center gap-2 mb-8">
-              <div className="w-10 h-10 bg-brand-green rounded-full flex items-center justify-center text-black text-sm">F</div>
+            <Link to="/" className="flex items-center gap-2 mb-8">
+              <img src="/logo.png" alt="Logo" style={{ height: '100px' }} />
             </Link>
             <p className="text-white/40 max-w-md mb-8 leading-relaxed">
               Redefining the modern grooming experience through precision, technology, and community. Join us in the pursuit of perfection.
