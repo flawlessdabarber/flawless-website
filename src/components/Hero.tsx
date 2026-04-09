@@ -92,7 +92,7 @@ export default function Hero() {
             transition={{ delay: 1 }}
             className="text-[15px] uppercase tracking-[0.3em] font-bold text-brand-green animate-pulse"
           >
-            Book with AI
+            Book | Buy with <span className="text-white">F AI</span>
           </motion.p>
         </div>
 
