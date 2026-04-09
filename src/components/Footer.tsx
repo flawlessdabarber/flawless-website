@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Instagram, Twitter, Facebook, Youtube } from 'lucide-react';
 import FooterMap from './FooterMap';
+import logo from '../assets/logo.png';
 
 export default function Footer() {
   return (
@@ -12,7 +13,7 @@ export default function Footer() {
         <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-12 mb-24">
           <div className="lg:col-span-2">
             <Link to="/" className="flex items-center gap-2 mb-8">
-              <img src="/logo.png" alt="Logo" style={{ height: '100px' }} />
+              <img src={logo} alt="Logo" style={{ height: '100px' }} />
             </Link>
             <p className="text-white/40 max-w-md mb-8 leading-relaxed">
               Redefining the modern grooming experience through precision, technology, and community. Join us in the pursuit of perfection.

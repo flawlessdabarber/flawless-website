@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import { auth, logout } from '../firebase';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { useCart } from '../lib/CartContext';
+import logo from '../assets/logo.png';
 
 export default function Navbar() {
   const [user] = useAuthState(auth);
@@ -16,7 +17,7 @@ export default function Navbar() {
     <nav className="sticky top-0 z-50 bg-black border-b border-white/10">
       <div className="container mx-auto px-6 py-4 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2">
-          <img src="/logo.png" alt="Logo" style={{ height: '150px' }} />
+          <img src={logo} alt="Logo" style={{ height: '150px' }} />
         </Link>
 
         <div className="flex items-center gap-4">
