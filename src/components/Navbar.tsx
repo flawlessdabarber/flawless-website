@@ -14,10 +14,10 @@ export default function Navbar() {
   const cartItemCount = items.reduce((total, item) => total + item.quantity, 0);
 
   return (
-    <nav className="sticky top-0 z-50 bg-black border-b border-white/10">
-      <div className="container mx-auto px-6 py-4 flex items-center justify-between">
+    <nav className="sticky top-0 z-50 bg-black border-b border-white/10 h-[155px] flex items-center">
+      <div className="container mx-auto px-6 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2">
-          <img src={logo} alt="Logo" style={{ height: '150px' }} />
+          <img src={logo} alt="Logo" style={{ height: '200px' }} className="relative z-10" />
         </Link>
 
         <div className="flex items-center gap-4">

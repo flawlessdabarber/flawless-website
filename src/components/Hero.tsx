@@ -13,7 +13,7 @@ export default function Hero() {
       <div className="absolute inset-0 z-0">
         <div className={cn(
           "absolute top-1/4 left-1/4 w-96 h-96 rounded-full blur-[120px] transition-all duration-1000",
-          isAIActive ? "bg-brand-green/30 animate-pulse" : "bg-brand-green/10"
+          isAIActive ? "bg-brand-green/[0.22] animate-pulse" : "bg-brand-green/5"
         )} />
         <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-white/5 rounded-full blur-[120px]" />
       </div>
@@ -39,7 +39,7 @@ export default function Hero() {
             <motion.div 
               className={cn(
                 "orb-inner transition-all duration-500",
-                isAIActive ? "scale-110 shadow-[0_0_50px_rgba(0,255,0,0.2)]" : ""
+                isAIActive ? "scale-110 shadow-[0_0_37px_rgba(0,255,0,0.15)]" : ""
               )}
               animate={isAIActive ? { 
                 scale: [1.1, 1.15, 1.1],
