@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { Play, Mic2, ExternalLink, MessageSquare } from 'lucide-react';
+import { Play, Mic2, ExternalLink, MessageSquare, Calendar, MapPin } from 'lucide-react';
 import { useAI } from '../lib/AIContext';
+import { cn } from '../lib/utils';
 
 export default function Podcast() {
   const { setSelectedPodcast } = useAI();
@@ -106,33 +107,54 @@ export default function Podcast() {
             </div>
           </motion.div>
 
-          <div className="relative">
-            <div className="aspect-square glass rounded-3xl overflow-hidden relative group">
-              <img 
-                src="https://picsum.photos/seed/podcast/800/800" 
-                alt="Podcast Studio" 
-                className="w-full h-full object-cover opacity-50 group-hover:scale-110 transition-transform duration-700"
-                referrerPolicy="no-referrer"
-              />
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-24 h-24 bg-brand-green rounded-full flex items-center justify-center text-black shadow-[0_0_50px_rgba(0,255,0,0.3)]">
-                  <Play size={40} fill="currentColor" />
-                </div>
-              </div>
-            </div>
-            
-            {/* Floating Episode Card */}
-            <motion.div 
-              animate={{ y: [0, -20, 0] }}
-              transition={{ duration: 4, repeat: Infinity }}
-              className="absolute -bottom-10 left-1/2 -translate-x-1/2 glass p-6 rounded-2xl w-11/12 max-w-sm shadow-2xl flex flex-col items-center text-center"
+          <div className="flex justify-center lg:justify-end">
+            <motion.div
+              className="w-full max-w-[340px] relative perspective-[1000px] group"
             >
-              <p className="text-brand-green text-[10px] font-bold uppercase tracking-widest mb-2">Latest Episode</p>
-              <h4 className="font-bold mb-2">Building a Grooming Empire with Flawless</h4>
-              <p className="text-xs text-white/50 mb-4">Episode 42 • 45 mins</p>
-              <div className="flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-tighter cursor-pointer hover:text-brand-green">
-                View Show Notes <ExternalLink size={12} />
-              </div>
+              {/* iPhone Style Ticket */}
+              <motion.div
+                whileHover={{ rotateY: -5, rotateX: 5, y: -10 }}
+                className={cn(
+                  "relative w-full aspect-[3/4] rounded-[40px] overflow-hidden shadow-2xl transition-all duration-500",
+                  "bg-gradient-to-br from-brand-green to-emerald-600"
+                )}
+              >
+                {/* Top Section */}
+                <div className="p-8 flex flex-col items-center text-center h-full">
+                  <div className="w-20 h-20 rounded-full bg-white/20 backdrop-blur-md p-4 mb-6 shadow-lg flex items-center justify-center text-black">
+                    <Play size={32} fill="currentColor" className="ml-1" />
+                  </div>
+                  
+                  <span className="text-[10px] font-mono uppercase tracking-[0.3em] text-black/60 mb-2 font-bold">
+                    Latest Episode
+                  </span>
+                  <h3 className="text-3xl font-black uppercase tracking-tighter text-black leading-none mb-2">
+                    Building a Grooming Empire
+                  </h3>
+
+                  <div className="flex flex-col gap-4 w-full mt-auto mb-12">
+                    <div className="flex items-center justify-center gap-2 text-black/80 font-bold text-sm">
+                      <Calendar size={16} />
+                      Episode 42
+                    </div>
+                    <div className="flex items-center justify-center gap-2 text-black/80 font-bold text-sm">
+                      <MapPin size={16} />
+                      Guest Speaker
+                    </div>
+                  </div>
+
+                  {/* Perforated Line */}
+                  <div className="absolute bottom-[25%] left-0 right-0 h-px border-t-2 border-dashed border-black/20" />
+                  <div className="absolute bottom-[25%] -left-3 w-6 h-6 bg-[#0a0a0a] rounded-full" />
+                  <div className="absolute bottom-[25%] -right-3 w-6 h-6 bg-[#0a0a0a] rounded-full" />
+
+                  {/* Bottom Section */}
+                  <div className="absolute bottom-0 left-0 right-0 p-6 flex flex-col items-center">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-black/40 mb-1">Guest's Name</p>
+                    <p className="text-xl font-black text-black uppercase cursor-pointer hover:scale-105 transition-transform">Watch Now</p>
+                  </div>
+                </div>
+              </motion.div>
             </motion.div>
           </div>
         </div>
