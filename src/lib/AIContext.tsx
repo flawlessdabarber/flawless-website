@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react';
 import { GoogleGenAI, Modality, Type } from "@google/genai";
-import { useBooking } from './BookingContext';
+import { useBooking, services } from './BookingContext';
 import { useCart } from './CartContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 
@@ -16,6 +16,7 @@ if (recognition) {
 }
 
 interface Message {
+  id: string;
   role: 'user' | 'ai';
   text: string;
 }
@@ -31,7 +32,7 @@ interface AIContextType {
   setIsSpeaking: (speaking: boolean) => void;
   language: string;
   setLanguage: (lang: string) => void;
-  sendMessage: (text?: string) => Promise<void>;
+  sendMessage: (text?: string, isSystem?: boolean) => Promise<void>;
   startListening: () => void;
   stopListening: () => void;
   selectedEvent: string | null;
@@ -49,14 +50,14 @@ interface AIContextType {
 const AIContext = createContext<AIContextType | undefined>(undefined);
 
 export function AIProvider({ children }: { children: ReactNode }) {
-  const { state: bookingState, totalPrice } = useBooking();
-  const { items: cartItems, totalPrice: cartTotal, addItem } = useCart();
+  const { state: bookingState, totalPrice, toggleService, setDate, setTime, setBarber, setLocationType, setClientType, setAddress } = useBooking();
+  const { items: cartItems, totalPrice: cartTotal, addItem, removeItem } = useCart();
   const navigate = useNavigate();
   const location = useLocation();
   const [isAIActive, setIsAIActive] = useState(false);
   const [isChatBoxOpen, setIsChatBoxOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
-    { role: 'ai', text: 'Welcome to Flawless Da Barber. I am your AI Concierge. How can I assist you with booking, memberships, or our premium products today? Let me know if you need me to pull up the chat box.' }
+    { id: 'welcome', role: 'ai', text: 'Welcome to Flawless Da Barber. I am F AI. How can I assist you with booking, memberships, or our premium products today? Let me know if you need me to pull up the chat box.' }
   ]);
   const [isListening, setIsListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(true);
@@ -135,7 +136,7 @@ export function AIProvider({ children }: { children: ReactNode }) {
     if (!text?.trim()) return;
     
     if (!isSystem) {
-      setMessages(prev => [...prev, { role: 'user', text }]);
+      setMessages(prev => [...prev, { id: `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`, role: 'user', text }]);
     }
 
     try {
@@ -187,7 +188,7 @@ export function AIProvider({ children }: { children: ReactNode }) {
       `;
 
       const aiConfig = {
-        systemInstruction: `You are the Flawless Da Barber AI Concierge. 
+        systemInstruction: `You are F AI, the Flawless Da Barber AI Concierge. 
         You are synced with all sections of the website:
         - BOOKING: Help clients book hair/skin services (In-Store, Mobile Visit, Walk-in/Member). Explain pricing (Overtime, Sunday fees). Note: Hair Cuts, High Profile Clientele, Urban Style, and Hair Style are mutually exclusive base services.
         
@@ -217,32 +218,34 @@ export function AIProvider({ children }: { children: ReactNode }) {
         Be professional, high-end, and to the point. Current language: ${language}.
         
         You have access to tools to control the website. Use them when the user asks you to do something or when you are talking about a specific section:
-        - execute_website_action: Use this to scroll to sections, navigate to pages, select options, add to cart, or toggle the chat box.
+        - execute_website_action: Use this to scroll to sections, navigate to pages, select options, add to cart, remove from cart, toggle services, or toggle the chat box.
         - If the user asks to hide or close the chat box, use execute_website_action with action="toggle_chat_box" and target="false". Let them know they can click the AI button to bring it back.
-        - If you talk about a section (e.g., merchandise, booking, services, membership, podcast, events), use execute_website_action to scroll to it (action="scroll_to_section", target="section_id").
-        - If the user asks to navigate to a page, use execute_website_action with action="navigate" and target="/path".
-        - If the user asks to add a product to the cart, use action="add_to_cart" and target="product_id" with additional_info as a JSON string containing quantity, size, and color.
+        - ALWAYS use execute_website_action to scroll to a section when you talk about it (action="scroll_to_section", target="section_id" e.g., 'merchandise', 'services', 'membership', 'events', 'podcast', 'body-of-work').
+        - If the user asks to navigate to their cart or dashboard, use execute_website_action with action="navigate" and target="/cart" or "/dashboard".
+        - If the user asks to add or remove a product/membership/event to/from the cart, use action="toggle_cart_item" and target="item_id" (e.g., 'pomade-1000', 'membership-kids-1-cut', 'event-1'). For adding, include additional_info as JSON with name, price, category.
+        - If the user asks to select or deselect a service, use action="toggle_service" and target="service_id" (e.g., 'hair', 'hairstyle', 'urban', 'skin', 'sessions', 'cleanup').
+        - If the user asks to set a date, time, barber, location type, client type, or address, use action="update_booking" and target="booking_field" (e.g., 'date', 'time', 'barber', 'locationType', 'clientType', 'address') with additional_info containing the value (e.g., '2026-04-15', '10:00 AM', 'flawless', 'mobile', 'member', '123 Main St').
         - If the user asks to select an option, scroll a slider, or click a button, use action="click_element" and target="css_selector" (e.g., "button:contains('Hair')", ".next-slide-btn").
         - If the user asks to scroll a slider, use action="dispatch_event" and target="ai_action" with additional_info as a JSON string describing the action.`,
         tools: [{
           functionDeclarations: [
             {
               name: "execute_website_action",
-              description: "Executes an action on the website based on the user's request. Use this to scroll, select options, navigate, add to cart, click elements, or toggle the chat box.",
+              description: "Executes an action on the website based on the user's request. Use this to scroll, select options, navigate, add/remove from cart, toggle services, update booking details, click elements, or toggle the chat box.",
               parameters: {
                 type: Type.OBJECT,
                 properties: {
                   action: {
                     type: Type.STRING,
-                    description: "The action to perform: 'scroll_to_section', 'navigate', 'toggle_chat_box', 'add_to_cart', 'click_element', 'dispatch_event'",
+                    description: "The action to perform: 'scroll_to_section', 'navigate', 'toggle_chat_box', 'toggle_cart_item', 'toggle_service', 'update_booking', 'click_element', 'dispatch_event'",
                   },
                   target: {
                     type: Type.STRING,
-                    description: "The target of the action (e.g., section ID like 'merchandise', 'services', 'booking', path like '/cart', product ID, CSS selector, or 'false' for toggle_chat_box)",
+                    description: "The target of the action (e.g., section ID like 'merchandise', 'services', 'membership', path like '/cart', '/dashboard', item ID, service ID, booking field like 'date', 'time', 'barber', CSS selector, or 'false' for toggle_chat_box)",
                   },
                   additional_info: {
                     type: Type.STRING,
-                    description: "Any additional info needed (e.g., JSON string for add_to_cart or dispatch_event)",
+                    description: "Any additional info needed (e.g., JSON string for toggle_cart_item, value for update_booking like '2026-04-15', '10:00 AM', 'flawless', or dispatch_event)",
                   }
                 },
                 required: ["action", "target"]
@@ -254,16 +257,36 @@ export function AIProvider({ children }: { children: ReactNode }) {
 
       const userText = isSystem ? `[SYSTEM NOTIFICATION: User just selected ${text}. Acknowledge this selection and guide them.]` : text;
 
-      const response = await ai.models.generateContent({
+      // Add empty AI message to start streaming
+      const messageId = `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      setMessages(prev => [...prev, { id: messageId, role: 'ai', text: '' }]);
+
+      const responseStream = await ai.models.generateContentStream({
         model: "gemini-3-flash-preview",
         contents: userText,
         config: aiConfig,
       });
 
-      let aiText = "I'm sorry, I couldn't process that.";
-      
-      if (response.functionCalls && response.functionCalls.length > 0) {
-        const call = response.functionCalls[0];
+      let aiText = "";
+      let functionCall = null;
+      let modelParts: any[] = [];
+
+      for await (const chunk of responseStream) {
+        if (chunk.functionCalls && chunk.functionCalls.length > 0) {
+          functionCall = chunk.functionCalls[0];
+          modelParts = chunk.candidates?.[0]?.content?.parts || [];
+          break;
+        }
+        if (chunk.text) {
+          aiText += chunk.text;
+          setMessages(prev => prev.map(msg => 
+            msg.id === messageId ? { ...msg, text: aiText } : msg
+          ));
+        }
+      }
+
+      if (functionCall) {
+        const call = functionCall;
         if (call.name === "execute_website_action") {
           const args = call.args as any;
           if (args.action === 'scroll_to_section') {
@@ -284,25 +307,52 @@ export function AIProvider({ children }: { children: ReactNode }) {
             } else {
               setIsChatBoxOpen(true);
             }
-          } else if (args.action === 'add_to_cart') {
+          } else if (args.action === 'toggle_cart_item') {
             try {
-              const info = JSON.parse(args.additional_info || '{}');
-              addItem({
-                id: args.target,
-                name: args.target.replace('-', ' '), // Basic fallback name
-                price: info.price || 0,
-                category: info.category || 'Item',
-                image: 'https://picsum.photos/seed/item/800/600',
-                quantity: info.quantity || 1,
-                size: info.size,
-                color: info.color
-              });
+              const itemExists = cartItems.some(item => item.id === args.target);
+              if (itemExists) {
+                removeItem(args.target);
+              } else {
+                const info = JSON.parse(args.additional_info || '{}');
+                addItem({
+                  id: args.target,
+                  name: info.name || args.target.replace(/-/g, ' '),
+                  price: info.price || 0,
+                  category: info.category || 'Item',
+                  image: 'https://picsum.photos/seed/item/800/600',
+                  quantity: info.quantity || 1,
+                  size: info.size,
+                  color: info.color
+                });
+              }
             } catch (e) {
-              console.error("Failed to parse add_to_cart info", e);
+              console.error("Failed to toggle cart item", e);
+            }
+          } else if (args.action === 'toggle_service') {
+            try {
+              const service = services.find(s => s.id === args.target);
+              if (service) {
+                toggleService(service);
+              } else {
+                console.warn(`Service ${args.target} not found`);
+              }
+            } catch (e) {
+              console.error("Failed to toggle service", e);
+            }
+          } else if (args.action === 'update_booking') {
+            try {
+              const value = args.additional_info;
+              if (args.target === 'date') setDate(value);
+              else if (args.target === 'time') setTime(value);
+              else if (args.target === 'barber') setBarber(value);
+              else if (args.target === 'locationType') setLocationType(value as any);
+              else if (args.target === 'clientType') setClientType(value as any);
+              else if (args.target === 'address') setAddress(value);
+            } catch (e) {
+              console.error("Failed to update booking", e);
             }
           } else if (args.action === 'click_element') {
             try {
-              // Simple text-based selector support like "button:contains('Text')"
               if (args.target.includes(':contains(')) {
                 const match = args.target.match(/(.*?):contains\(['"](.*?)['"]\)/);
                 if (match) {
@@ -323,8 +373,7 @@ export function AIProvider({ children }: { children: ReactNode }) {
             window.dispatchEvent(new CustomEvent(args.target, { detail: args.additional_info }));
           }
           
-          // Generate a response after the function call
-          const followUp = await ai.models.generateContent({
+          const followUpStream = await ai.models.generateContentStream({
             model: "gemini-3-flash-preview",
             contents: [
               {
@@ -333,7 +382,7 @@ export function AIProvider({ children }: { children: ReactNode }) {
               },
               {
                 role: 'model',
-                parts: response.candidates?.[0]?.content?.parts || []
+                parts: modelParts
               },
               {
                 role: 'user',
@@ -347,14 +396,20 @@ export function AIProvider({ children }: { children: ReactNode }) {
             ],
             config: aiConfig,
           });
-          aiText = followUp.text || "Action completed.";
+
+          for await (const chunk of followUpStream) {
+            if (chunk.text) {
+              aiText += chunk.text;
+              setMessages(prev => {
+                const newMessages = [...prev];
+                newMessages[newMessages.length - 1].text = aiText;
+                return newMessages;
+              });
+            }
+          }
         }
-      } else {
-        aiText = response.text || aiText;
       }
 
-      setMessages(prev => [...prev, { role: 'ai', text: aiText }]);
-      
       if (isSpeaking && aiText.trim()) {
         speak(aiText);
       }
@@ -547,6 +602,12 @@ export function AIProvider({ children }: { children: ReactNode }) {
       sendMessage(`Booking Time: ${bookingState.time}`, true);
     }
   }, [bookingState.time, isAIActive]);
+
+  useEffect(() => {
+    if (isAIActive && bookingState.barber) {
+      sendMessage(`Selected Barber: ${bookingState.barber}`, true);
+    }
+  }, [bookingState.barber, isAIActive]);
 
   return (
     <AIContext.Provider value={{ 

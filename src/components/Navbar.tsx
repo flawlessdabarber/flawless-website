@@ -40,8 +40,8 @@ export default function Navbar() {
               </button>
             </div>
           ) : (
-            <Link to="/login" className="px-6 py-2 bg-white text-black text-[10px] font-bold uppercase tracking-widest hover:bg-brand-green transition-colors rounded-sm">
-              Login / Sign Up
+            <Link to="/login" className="px-6 py-2 text-white text-[10px] font-bold uppercase tracking-widest hover:text-brand-green transition-colors">
+              Login | Signup
             </Link>
           )}
         </div>

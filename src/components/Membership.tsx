@@ -250,7 +250,7 @@ export default function Membership() {
                       
                       <div 
                         className={cn(
-                          "w-full md:w-3/4 mx-auto py-4 transition-all text-2xl font-bold uppercase text-center relative z-20 cursor-pointer rounded-xl group/btn",
+                          "w-full md:w-3/4 mx-auto py-4 transition-all text-xl font-bold uppercase tracking-tighter text-center relative z-20 cursor-pointer rounded-xl group/btn",
                           isRestricted 
                             ? "text-red-500" 
                             : (isCenter ? "text-white" : "text-white hover:text-white")

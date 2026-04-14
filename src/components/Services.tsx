@@ -1,47 +1,9 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Scissors, Sparkles, MapPin, Store, Zap, Wind, Palette, Calendar as CalendarIcon, Clock, Check, Layers, ChevronLeft, ChevronRight, ShieldCheck, Baby, User, ChevronDown, ChevronUp } from 'lucide-react';
-import { useBooking, Service } from '../lib/BookingContext';
+import { useBooking, Service, services } from '../lib/BookingContext';
+import { useCart } from '../lib/CartContext';
 import { cn } from '../lib/utils';
-
-const services: Service[] = [
-  {
-    id: 'hair',
-    title: 'Hair Cuts',
-    description: 'Precision fades, tapers, and classic cuts tailored to your head shape.',
-    price: 45,
-  },
-  {
-    id: 'hairstyle',
-    title: 'Hair Style',
-    description: 'Special occasion styling, pompadours, and expert product application.',
-    price: 60,
-  },
-  {
-    id: 'urban',
-    title: 'Urban Style',
-    description: 'Modern, edgy styles including hair designs and creative coloring.',
-    price: 55,
-  },
-  {
-    id: 'skin',
-    title: 'High Profile Clientele',
-    description: 'Exclusive grooming services for high-profile clients requiring discretion and excellence.',
-    price: 500,
-  },
-  {
-    id: 'sessions',
-    title: 'Sessions',
-    description: 'Extended grooming sessions for complete transformations and relaxation.',
-    price: 120,
-  },
-  {
-    id: 'cleanup',
-    title: 'Clean Up',
-    description: 'Quick neck and sideburn trim to keep you looking sharp between cuts.',
-    price: 25,
-  }
-];
 
 const serviceIcons: Record<string, any> = {
   hair: Scissors,
@@ -67,6 +29,7 @@ const barbers = [
 
 export default function Services() {
   const { state, toggleService, setLocationType, setClientType, setAgeGroup, setDate, setTime, setBarber, setAddress, setMonth, totalPrice, isOvertime, isSunday, isDayOffFee, otFee } = useBooking();
+  const { addItem } = useCart();
   
   const [barberIndex, setBarberIndex] = React.useState(0);
   const [directionBarber, setDirectionBarber] = React.useState(0);
@@ -106,6 +69,41 @@ export default function Services() {
   const [startX, setStartX] = React.useState(0);
   const [scrollLeft, setScrollLeft] = React.useState(0);
   const [isSummaryVisible, setIsSummaryVisible] = React.useState(true);
+  const [reserveError, setReserveError] = React.useState('');
+
+  const handleReserve = () => {
+    if (!state.date) {
+      setReserveError('Please select a date.');
+      return;
+    }
+    if (!state.time) {
+      setReserveError('Please select a time.');
+      return;
+    }
+    if (state.locationType === 'mobile' && !state.address) {
+      setReserveError('Please enter your mobile service address.');
+      return;
+    }
+    
+    setReserveError('');
+    
+    const bookingId = `booking-${Date.now()}`;
+    const serviceNames = state.selectedServices.map(s => s.title).join(', ');
+    
+    addItem({
+      id: bookingId,
+      name: `Reservation: ${serviceNames}`,
+      price: totalPrice,
+      category: 'Service',
+      image: 'https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&q=80&w=800',
+      quantity: 1,
+      size: `${state.date} @ ${state.time}`,
+      color: state.locationType === 'in-store' ? 'In-Store' : 'Mobile'
+    });
+    
+    // Hide the summary to show it's been processed
+    setIsSummaryVisible(false);
+  };
 
   const handleMouseDown = (e: React.MouseEvent) => {
     if (!scrollRef.current) return;
@@ -124,13 +122,15 @@ export default function Services() {
     scrollRef.current.scrollLeft = scrollLeft - walk;
   };
 
-  const getReservedTimes = (dateStr: string) => {
-    const hash = dateStr.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  const getReservedTimes = (dateStr: string, barberId?: string | null) => {
+    const hash = dateStr.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) + (barberId ? barberId.length * 10 : 0);
     const reserved = [];
     if (hash % 2 === 0) reserved.push('10:00 AM');
     if (hash % 3 === 0) reserved.push('2:00 PM');
     if (hash % 4 === 0) reserved.push('4:00 PM');
     if (hash % 5 === 0) reserved.push('7:00 PM');
+    if (hash % 7 === 0) reserved.push('11:00 AM');
+    if (hash % 6 === 0) reserved.push('1:00 PM');
     return reserved;
   };
 
@@ -143,10 +143,9 @@ export default function Services() {
     return { hour, minute: parseInt(minuteStr) };
   };
 
-  const isPastTime = (timeStr: string) => {
-    if (!state.date) return false;
-    if (state.date < todayStr) return true;
-    if (state.date > todayStr) return false;
+  const isPastTimeForDate = (timeStr: string, dateStr: string) => {
+    if (dateStr < todayStr) return true;
+    if (dateStr > todayStr) return false;
     
     const { hour, minute } = parseTime(timeStr);
     const nowHour = now.getHours();
@@ -155,6 +154,11 @@ export default function Services() {
     if (hour < nowHour) return true;
     if (hour === nowHour && minute <= nowMinute) return true;
     return false;
+  };
+
+  const isPastTime = (timeStr: string) => {
+    if (!state.date) return false;
+    return isPastTimeForDate(timeStr, state.date);
   };
 
   // Generate days for selected month
@@ -702,6 +706,21 @@ export default function Services() {
                 const isPastDate = dateStr < todayStr;
                 const isToday = dateStr === todayStr;
                 
+                const reservedTimes = getReservedTimes(dateStr, state.barber);
+                const availableSlotsCount = timeSlots.filter(t => !isPastTimeForDate(t, dateStr) && !reservedTimes.includes(t)).length;
+                const totalSlots = timeSlots.length;
+                const availabilityPercentage = availableSlotsCount / totalSlots;
+                
+                let availabilityColor = "bg-brand-green";
+                let availabilityText = "Available";
+                if (availableSlotsCount === 0) {
+                  availabilityColor = "bg-red-500";
+                  availabilityText = "Full";
+                } else if (availabilityPercentage < 0.3) {
+                  availabilityColor = "bg-yellow-500";
+                  availabilityText = "Limited";
+                }
+                
                 return (
                   <motion.button
                     key={i}
@@ -765,6 +784,12 @@ export default function Services() {
                     <span className={cn("text-[10px] uppercase tracking-widest", isSelected ? "text-white opacity-100 font-bold" : "opacity-60")}>
                       {date.toLocaleDateString('en-US', { month: 'short' })}
                     </span>
+                    {!isPastDate && (
+                      <div className="flex items-center gap-1 mt-1">
+                        <span className={cn("w-1.5 h-1.5 rounded-full", availabilityColor)} />
+                        {isSelected && <span className="text-[8px] uppercase tracking-tighter opacity-70">{availabilityText}</span>}
+                      </div>
+                    )}
                   </motion.button>
                 );
               })}
@@ -781,7 +806,7 @@ export default function Services() {
               {timeSlots.map((time, i) => {
                 const isSelected = state.time === time;
                 const overtime = isOvertimeSlot(time);
-                const reservedTimes = state.date ? getReservedTimes(state.date) : [];
+                const reservedTimes = state.date ? getReservedTimes(state.date, state.barber) : [];
                 const past = isPastTime(time);
                 const reserved = reservedTimes.includes(time);
                 const disabled = past || reserved;
@@ -1021,8 +1046,12 @@ export default function Services() {
                           {isDayOffFee && <span className="text-brand-green ml-2">(Day Off Fee +1x)</span>}
                         </p>
                         <p className="text-3xl font-bold text-brand-green">${totalPrice}</p>
+                        {reserveError && <p className="text-red-500 text-xs mt-1 absolute -top-6 right-8">{reserveError}</p>}
                       </div>
-                      <button className="px-8 md:px-12 py-4 bg-brand-green text-black font-bold uppercase tracking-widest hover:bg-white transition-all rounded-xl shadow-lg shadow-brand-green/20 whitespace-nowrap">
+                      <button 
+                        onClick={handleReserve}
+                        className="px-8 md:px-12 py-4 bg-brand-green text-black font-bold uppercase tracking-widest hover:bg-white transition-all rounded-xl shadow-lg shadow-brand-green/20 whitespace-nowrap"
+                      >
                         Reserve Now
                       </button>
                     </div>

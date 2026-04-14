@@ -44,6 +44,45 @@ interface BookingContextType {
 
 const BookingContext = createContext<BookingContextType | undefined>(undefined);
 
+export const services: Service[] = [
+  {
+    id: 'hair',
+    title: 'Hair Cuts',
+    description: 'Precision fades, tapers, and classic cuts tailored to your head shape.',
+    price: 45,
+  },
+  {
+    id: 'hairstyle',
+    title: 'Hair Style',
+    description: 'Special occasion styling, pompadours, and expert product application.',
+    price: 60,
+  },
+  {
+    id: 'urban',
+    title: 'Urban Style',
+    description: 'Modern, edgy styles including hair designs and creative coloring.',
+    price: 55,
+  },
+  {
+    id: 'skin',
+    title: 'High Profile Clientele',
+    description: 'Exclusive grooming services for high-profile clients requiring discretion and excellence.',
+    price: 500,
+  },
+  {
+    id: 'sessions',
+    title: 'Sessions',
+    description: 'Extended grooming sessions for complete transformations and relaxation.',
+    price: 120,
+  },
+  {
+    id: 'cleanup',
+    title: 'Clean Up',
+    description: 'Quick neck and sideburn trim to keep you looking sharp between cuts.',
+    price: 25,
+  }
+];
+
 export function BookingProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<BookingState>({
     selectedServices: [],

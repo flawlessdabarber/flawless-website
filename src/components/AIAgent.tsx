@@ -38,7 +38,7 @@ export default function AIAgent() {
             <div className="p-4 bg-brand-green text-black flex justify-between items-center">
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 bg-black rounded-full animate-pulse" />
-                <span className="font-bold uppercase tracking-tighter">Flawless AI</span>
+                <span className="font-bold uppercase tracking-tighter">F AI</span>
               </div>
               <div className="flex items-center gap-2">
                 <button onClick={() => setLanguage(language === 'en' ? 'es' : 'en')} className="hover:opacity-70" title="Switch Language">
@@ -54,8 +54,8 @@ export default function AIAgent() {
             </div>
 
             <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-4">
-              {messages.map((m, i) => (
-                <div key={i} className={cn("flex", m.role === 'user' ? "justify-end" : "justify-start")}>
+              {messages.map((m) => (
+                <div key={m.id} className={cn("flex", m.role === 'user' ? "justify-end" : "justify-start")}>
                   <div className={cn(
                     "max-w-[80%] p-3 rounded-xl text-sm",
                     m.role === 'user' ? "bg-brand-green text-black" : "bg-white/10 text-white"
