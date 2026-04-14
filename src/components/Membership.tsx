@@ -2,12 +2,14 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Check, Crown, Briefcase, TrendingUp, Baby } from 'lucide-react';
 import { useAI } from '../lib/AIContext';
+import { useCart } from '../lib/CartContext';
 import { cn } from '../lib/utils';
 
 type ServiceType = 'cut' | 'style' | 'urban';
 
 export default function Membership() {
   const { setSelectedMembership } = useAI();
+  const { items, addItem, removeItem } = useCart();
   const [routine, setRoutine] = useState(1);
   const [serviceType, setServiceType] = useState<ServiceType>('cut');
   const [tierIndex, setTierIndex] = useState(0);
@@ -186,7 +188,21 @@ export default function Membership() {
                     onClick={() => {
                       if (isCenter) {
                         if (!isRestricted) {
-                          setSelectedMembership(`${tier.name} - ${routine}x ${serviceType}s`);
+                          const planName = `${tier.name} - ${routine}x ${serviceType}s`;
+                          const planId = `membership-${tier.name.toLowerCase()}-${routine}-${serviceType}`;
+                          
+                          if (items.some(item => item.id === planId)) {
+                            removeItem(planId);
+                          } else {
+                            addItem({
+                              id: planId,
+                              name: planName,
+                              price: price,
+                              category: 'Membership',
+                              image: 'https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&q=80&w=800',
+                              quantity: 1
+                            });
+                          }
                         }
                       } else if (offset === -1) {
                         paginate(-1);
@@ -234,13 +250,39 @@ export default function Membership() {
                       
                       <div 
                         className={cn(
-                          "w-full py-4 transition-all text-2xl font-bold uppercase text-center relative z-20 cursor-pointer hover:scale-105",
+                          "w-full md:w-3/4 mx-auto py-4 transition-all text-2xl font-bold uppercase text-center relative z-20 cursor-pointer rounded-xl group/btn",
                           isRestricted 
                             ? "text-red-500" 
-                            : "text-white hover:text-brand-green"
+                            : (isCenter ? "text-white" : "text-white hover:text-white")
                         )}
                       >
-                        {isRestricted ? 'Not Available for Urban' : 'Select Plan'}
+                        <motion.div
+                          animate={isCenter && !isRestricted ? {
+                            boxShadow: ["0px 0px 5px rgba(255,255,255,0.2)", "0px 0px 20px rgba(255,255,255,0.8)", "0px 0px 5px rgba(255,255,255,0.2)"],
+                            opacity: [0.3, 1, 0.3]
+                          } : {
+                            boxShadow: "0px 0px 0px rgba(255,255,255,0)",
+                            opacity: 1
+                          }}
+                          transition={isCenter && !isRestricted ? {
+                            duration: 1.5,
+                            repeat: Infinity,
+                            ease: "easeInOut"
+                          } : {
+                            duration: 0.3
+                          }}
+                          className={cn(
+                            "absolute inset-0 border rounded-xl pointer-events-none transition-colors",
+                            isRestricted 
+                              ? "border-red-500/30" 
+                              : (isCenter ? "border-white" : "border-white/30 group-hover/btn:border-white")
+                          )}
+                        />
+                        <span className="relative z-10">
+                          {isRestricted 
+                            ? 'Not Available for Urban' 
+                            : (items.some(item => item.id === `membership-${tier.name.toLowerCase()}-${routine}-${serviceType}`) ? 'Remove Plan' : 'Select Plan')}
+                        </span>
                       </div>
                     </div>
                   </motion.div>

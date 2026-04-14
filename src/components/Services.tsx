@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Scissors, Sparkles, MapPin, Store, Zap, Wind, Palette, Calendar as CalendarIcon, Clock, Check, Layers, ChevronLeft, ChevronRight, ShieldCheck, Baby, User } from 'lucide-react';
+import { Scissors, Sparkles, MapPin, Store, Zap, Wind, Palette, Calendar as CalendarIcon, Clock, Check, Layers, ChevronLeft, ChevronRight, ShieldCheck, Baby, User, ChevronDown, ChevronUp } from 'lucide-react';
 import { useBooking, Service } from '../lib/BookingContext';
 import { cn } from '../lib/utils';
 
@@ -105,6 +105,7 @@ export default function Services() {
   const [isDragging, setIsDragging] = React.useState(false);
   const [startX, setStartX] = React.useState(0);
   const [scrollLeft, setScrollLeft] = React.useState(0);
+  const [isSummaryVisible, setIsSummaryVisible] = React.useState(true);
 
   const handleMouseDown = (e: React.MouseEvent) => {
     if (!scrollRef.current) return;
@@ -954,63 +955,97 @@ export default function Services() {
             initial={{ y: 100 }}
             animate={{ y: 0 }}
             exit={{ y: 100 }}
-            className="fixed bottom-0 left-0 right-0 z-40 p-6"
+            className="fixed bottom-0 left-0 right-0 z-40 p-6 pointer-events-none"
           >
-            <div className="container mx-auto">
-              <div className="glass-dark p-6 rounded-2xl flex flex-col md:flex-row justify-between items-center gap-6 border-brand-green/30 shadow-[0_-20px_50px_rgba(0,0,0,0.5)]">
-                <div className="flex flex-col md:flex-row items-center gap-8">
-                  <div>
-                    <p className="text-[10px] uppercase tracking-widest opacity-50 mb-1">Selected Services</p>
-                    <p className="text-sm font-bold">
-                      {state.selectedServices.map(s => s.title).join(', ')}
-                    </p>
-                  </div>
-                  <div className="hidden md:block w-px h-8 bg-white/10" />
-                  <div>
-                    <p className="text-[10px] uppercase tracking-widest opacity-50 mb-1">Location</p>
-                    <p className="text-sm font-bold uppercase">
-                      {state.locationType === 'in-store' ? 'In-Store' : 'Mobile Visit'}
-                    </p>
-                  </div>
-                  <div className="hidden md:block w-px h-8 bg-white/10" />
-                  <div>
-                    <p className="text-[10px] uppercase tracking-widest opacity-50 mb-1">Client Type</p>
-                    <p className="text-sm font-bold uppercase">
-                      {state.clientType === 'walk-in' ? 'Walk-in' : 'Member'}
-                    </p>
-                  </div>
-                  <div className="hidden md:block w-px h-8 bg-white/10" />
-                  <div>
-                    <p className="text-[10px] uppercase tracking-widest opacity-50 mb-1">Appointment</p>
-                    <p className="text-sm font-bold">
-                      {state.date ? new Date(state.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'Select Date'} 
-                      {' @ '} 
-                      {state.time || 'Select Time'}
-                    </p>
-                  </div>
-                  <div className="hidden md:block w-px h-8 bg-white/10" />
-                  <div>
-                    <p className="text-[10px] uppercase tracking-widest opacity-50 mb-1">Barber</p>
-                    <p className="text-sm font-bold uppercase">
-                      {state.barber ? barbers.find(b => b.id === state.barber)?.name : 'Any'}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-8">
-                  <div className="text-right">
-                    <p className="text-[10px] uppercase tracking-widest opacity-50 mb-1">
-                      Total Price 
-                      {isOvertime && <span className="text-brand-green ml-2">(Overtime 2x)</span>}
-                      {isSunday && state.clientType === 'walk-in' && <span className="text-brand-green ml-2">(Sunday Walk-in +1x)</span>}
-                      {isDayOffFee && <span className="text-brand-green ml-2">(Day Off Fee +1x)</span>}
-                    </p>
-                    <p className="text-3xl font-bold text-brand-green">${totalPrice}</p>
-                  </div>
-                  <button className="px-12 py-4 bg-brand-green text-black font-bold uppercase tracking-widest hover:bg-white transition-all rounded-xl shadow-lg shadow-brand-green/20">
-                    Reserve Now
-                  </button>
-                </div>
-              </div>
+            <div className="container mx-auto flex justify-end md:justify-center">
+              <AnimatePresence mode="wait">
+                {isSummaryVisible ? (
+                  <motion.div
+                    key="full-summary"
+                    initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                    className="glass-dark p-6 rounded-2xl flex flex-col md:flex-row justify-between items-center gap-6 border-brand-green/30 shadow-[0_-20px_50px_rgba(0,0,0,0.5)] pointer-events-auto relative w-full"
+                  >
+                    <button 
+                      onClick={() => setIsSummaryVisible(false)}
+                      className="absolute -top-3 -right-3 w-8 h-8 bg-black border border-white/20 rounded-full flex items-center justify-center hover:bg-white/10 transition-colors z-50 text-white"
+                    >
+                      <ChevronDown size={16} />
+                    </button>
+                    
+                    <div className="flex flex-col md:flex-row items-center gap-8 w-full md:w-auto">
+                      <div>
+                        <p className="text-[10px] uppercase tracking-widest opacity-50 mb-1">Selected Services</p>
+                        <p className="text-sm font-bold">
+                          {state.selectedServices.map(s => s.title).join(', ')}
+                        </p>
+                      </div>
+                      <div className="hidden md:block w-px h-8 bg-white/10" />
+                      <div>
+                        <p className="text-[10px] uppercase tracking-widest opacity-50 mb-1">Location</p>
+                        <p className="text-sm font-bold uppercase">
+                          {state.locationType === 'in-store' ? 'In-Store' : 'Mobile Visit'}
+                        </p>
+                      </div>
+                      <div className="hidden md:block w-px h-8 bg-white/10" />
+                      <div>
+                        <p className="text-[10px] uppercase tracking-widest opacity-50 mb-1">Client Type</p>
+                        <p className="text-sm font-bold uppercase">
+                          {state.clientType === 'walk-in' ? 'Walk-in' : 'Member'}
+                        </p>
+                      </div>
+                      <div className="hidden md:block w-px h-8 bg-white/10" />
+                      <div>
+                        <p className="text-[10px] uppercase tracking-widest opacity-50 mb-1">Appointment</p>
+                        <p className="text-sm font-bold">
+                          {state.date ? new Date(state.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'Select Date'} 
+                          {' @ '} 
+                          {state.time || 'Select Time'}
+                        </p>
+                      </div>
+                      <div className="hidden md:block w-px h-8 bg-white/10" />
+                      <div>
+                        <p className="text-[10px] uppercase tracking-widest opacity-50 mb-1">Barber</p>
+                        <p className="text-sm font-bold uppercase">
+                          {state.barber ? barbers.find(b => b.id === state.barber)?.name : 'Any'}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-8 w-full md:w-auto justify-between md:justify-end mt-4 md:mt-0">
+                      <div className="text-right">
+                        <p className="text-[10px] uppercase tracking-widest opacity-50 mb-1">
+                          Total Price 
+                          {isOvertime && <span className="text-brand-green ml-2">(Overtime 2x)</span>}
+                          {isSunday && state.clientType === 'walk-in' && <span className="text-brand-green ml-2">(Sunday Walk-in +1x)</span>}
+                          {isDayOffFee && <span className="text-brand-green ml-2">(Day Off Fee +1x)</span>}
+                        </p>
+                        <p className="text-3xl font-bold text-brand-green">${totalPrice}</p>
+                      </div>
+                      <button className="px-8 md:px-12 py-4 bg-brand-green text-black font-bold uppercase tracking-widest hover:bg-white transition-all rounded-xl shadow-lg shadow-brand-green/20 whitespace-nowrap">
+                        Reserve Now
+                      </button>
+                    </div>
+                  </motion.div>
+                ) : (
+                  <motion.button
+                    key="minimized-summary"
+                    initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                    onClick={() => setIsSummaryVisible(true)}
+                    className="glass-dark px-6 py-4 rounded-full flex items-center gap-4 border-brand-green/30 shadow-2xl pointer-events-auto hover:bg-white/5 transition-colors group"
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-brand-green animate-pulse" />
+                      <span className="text-xs font-bold uppercase tracking-widest">Booking Active</span>
+                    </div>
+                    <div className="w-px h-4 bg-white/20" />
+                    <span className="text-brand-green font-bold">${totalPrice}</span>
+                    <ChevronUp size={16} className="text-white/50 group-hover:text-white transition-colors ml-2" />
+                  </motion.button>
+                )}
+              </AnimatePresence>
             </div>
           </motion.div>
         )}

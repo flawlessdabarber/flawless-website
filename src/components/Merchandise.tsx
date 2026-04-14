@@ -122,7 +122,7 @@ const products = [
 
 export default function Merchandise() {
   const { setSelectedProduct } = useAI();
-  const { addItem } = useCart();
+  const { items, addItem, removeItem } = useCart();
   
   const [activeTab, setActiveTab] = useState<'Goods' | 'Swag'>('Goods');
   const [activeCategory, setActiveCategory] = useState<string>('All');
@@ -179,6 +179,13 @@ export default function Merchandise() {
   const handleAddToCart = () => {
     if (!currentProduct) return;
     
+    const isInCart = items.some(item => item.id === currentProduct.id);
+    
+    if (isInCart) {
+      removeItem(currentProduct.id);
+      return;
+    }
+    
     if (currentProduct.sizes.length > 0 && !selectedSize) {
       alert('Please select a size');
       return;
@@ -201,7 +208,6 @@ export default function Merchandise() {
       tracking: 'Pending'
     });
     
-    setSelectedProduct(`${currentProduct.name} added to cart`);
     resetSelections();
   };
 
@@ -219,13 +225,13 @@ export default function Merchandise() {
         </div>
 
         {/* Controls (Tabs + Filters) Centered above product */}
-        <div className="flex flex-col items-center justify-center gap-6 mb-12">
+        <div className="flex flex-col items-center justify-center gap-8 glass p-8 rounded-3xl border-white/5 max-w-4xl mx-auto mb-12">
           {/* Goods | Swag Tabs */}
           <div className="flex items-center gap-4 bg-black/30 p-2 rounded-2xl backdrop-blur-sm border border-white/5">
             <button 
               onClick={() => handleTabChange('Goods')}
               className={cn(
-                "px-8 py-3 rounded-xl text-sm font-bold uppercase tracking-widest transition-all",
+                "px-8 py-3 rounded-xl text-xl font-bold uppercase tracking-tighter transition-all",
                 activeTab === 'Goods' ? "bg-brand-green text-black" : "text-white/50 hover:text-white"
               )}
             >
@@ -234,7 +240,7 @@ export default function Merchandise() {
             <button 
               onClick={() => handleTabChange('Swag')}
               className={cn(
-                "px-8 py-3 rounded-xl text-sm font-bold uppercase tracking-widest transition-all",
+                "px-8 py-3 rounded-xl text-xl font-bold uppercase tracking-tighter transition-all",
                 activeTab === 'Swag' ? "bg-brand-green text-black" : "text-white/50 hover:text-white"
               )}
             >
@@ -249,10 +255,10 @@ export default function Merchandise() {
                 key={category}
                 onClick={() => handleCategoryChange(category)}
                 className={cn(
-                  "px-4 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-all border",
+                  "px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all border-2",
                   activeCategory === category 
                     ? "border-brand-green text-brand-green bg-brand-green/10" 
-                    : "border-white/10 text-white/50 hover:border-white/30 hover:text-white"
+                    : "border-white/30 text-white/80 hover:border-white/60 hover:text-white"
                 )}
               >
                 {category}
@@ -262,18 +268,18 @@ export default function Merchandise() {
 
           {/* Size and Color Options */}
           {currentProduct && (currentProduct.sizes.length > 0 || currentProduct.colors.length > 0) && (
-            <div className="flex flex-col items-center gap-6 mt-2">
+            <div className="flex flex-row flex-wrap justify-center items-start gap-8 mt-2">
               {currentProduct.sizes.length > 0 && (
                 <div className="flex flex-col items-center">
-                  <label className="block text-[10px] uppercase tracking-widest opacity-50 mb-2">Size</label>
+                  <label className="block text-[13px] font-bold uppercase tracking-widest opacity-50 mb-2">Size</label>
                   <div className="flex flex-wrap justify-center gap-2">
                     {currentProduct.sizes.map(size => (
                       <button 
                         key={size}
                         onClick={() => setSelectedSize(size)}
                         className={cn(
-                          "px-4 py-2 rounded-lg border text-sm font-bold transition-colors",
-                          selectedSize === size ? "bg-brand-green text-black border-brand-green" : "border-white/10 hover:border-white/30"
+                          "px-4 py-2 rounded-lg border-2 text-sm font-black uppercase transition-colors",
+                          selectedSize === size ? "bg-brand-green text-black border-brand-green" : "border-white/30 text-white/80 hover:border-white/60 hover:text-white"
                         )}
                       >
                         {size}
@@ -285,15 +291,15 @@ export default function Merchandise() {
               
               {currentProduct.colors.length > 0 && (
                 <div className="flex flex-col items-center">
-                  <label className="block text-[10px] uppercase tracking-widest opacity-50 mb-2">Color</label>
+                  <label className="block text-[13px] font-bold uppercase tracking-widest opacity-50 mb-2">Color</label>
                   <div className="flex flex-wrap justify-center gap-2">
                     {currentProduct.colors.map(color => (
                       <button 
                         key={color}
                         onClick={() => setSelectedColor(color)}
                         className={cn(
-                          "px-4 py-2 rounded-lg border text-sm font-bold transition-colors",
-                          selectedColor === color ? "bg-brand-green text-black border-brand-green" : "border-white/10 hover:border-white/30"
+                          "px-4 py-2 rounded-lg border-2 text-sm font-black uppercase transition-colors",
+                          selectedColor === color ? "bg-brand-green text-black border-brand-green" : "border-white/30 text-white/80 hover:border-white/60 hover:text-white"
                         )}
                       >
                         {color}
@@ -382,6 +388,7 @@ export default function Merchandise() {
                         onClick={() => {
                           if (isCenter) {
                             setSelectedId(originalId);
+                            setSelectedProduct(`Viewing ${product.name}`);
                           } else if (offset === -1) {
                             paginate(-1);
                           } else {
@@ -446,7 +453,7 @@ export default function Merchandise() {
             <div className="max-w-md mx-auto flex flex-col items-center justify-center">
               <div className="flex items-center justify-center gap-8 mb-6">
                 <div className="flex flex-col items-center">
-                  <label className="block text-[10px] uppercase tracking-widest opacity-50 mb-2">Quantity</label>
+                  <label className="block text-[13px] font-bold uppercase tracking-widest opacity-50 mb-2">Quantity</label>
                   <div className="flex items-center gap-4">
                     <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="w-10 h-10 rounded-lg border border-white/10 flex items-center justify-center hover:bg-white/5 transition-colors">-</button>
                     <span className="font-bold w-8 text-center">{quantity}</span>
@@ -454,16 +461,21 @@ export default function Merchandise() {
                   </div>
                 </div>
                 <div className="flex flex-col items-center">
-                  <label className="block text-[10px] uppercase tracking-widest opacity-50 mb-2">Total Price</label>
+                  <label className="block text-[13px] font-bold uppercase tracking-widest opacity-50 mb-2">Total Price</label>
                   <span className="font-bold text-brand-green text-2xl">${currentProduct.price * quantity}</span>
                 </div>
               </div>
               
               <button 
                 onClick={handleAddToCart}
-                className="w-full py-4 bg-brand-green text-black font-bold uppercase tracking-widest rounded-xl hover:bg-white transition-colors flex items-center justify-center gap-2"
+                className={cn(
+                  "w-full py-4 font-bold uppercase tracking-widest rounded-xl transition-colors flex items-center justify-center gap-2",
+                  items.some(item => item.id === currentProduct?.id)
+                    ? "bg-red-500 text-white hover:bg-red-600"
+                    : "bg-brand-green text-black hover:bg-white"
+                )}
               >
-                <ShoppingCart size={18} /> Add to Cart
+                <ShoppingCart size={18} /> {items.some(item => item.id === currentProduct?.id) ? 'Remove from Cart' : 'Add to Cart'}
               </button>
 
               {/* Delivery & Tracking Icons */}

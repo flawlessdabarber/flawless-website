@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Calendar, MapPin, Ticket, Plus, Minus, Smartphone, Share2, ChevronRight, Users } from 'lucide-react';
+import { Calendar, MapPin, Ticket, Plus, Minus, Smartphone, Share2, ChevronRight, Users, ShoppingCart } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { useAI } from '../lib/AIContext';
+import { useCart } from '../lib/CartContext';
 
 const events = [
   {
@@ -87,15 +88,26 @@ interface TicketCardProps {
 
 function TicketCard({ event }: TicketCardProps) {
   const [quantity, setQuantity] = useState(1);
-  const [isOrdered, setIsOrdered] = useState(false);
   const { setSelectedEvent } = useAI();
+  const { items, addItem, removeItem } = useCart();
 
+  const isOrdered = items.some(item => item.id === event.id);
   const total = quantity * event.price;
   const attendancePercent = (event.attendees / event.maxAttendees) * 100;
 
   const handleOrder = () => {
-    setIsOrdered(true);
-    setSelectedEvent(`${event.title} (${quantity} tickets)`);
+    addItem({
+      id: event.id,
+      name: `${event.title} Ticket`,
+      price: event.price,
+      category: 'Event',
+      image: event.logo,
+      quantity: quantity
+    });
+  };
+
+  const handleCancel = () => {
+    removeItem(event.id);
   };
 
   return (
@@ -228,10 +240,10 @@ function TicketCard({ event }: TicketCardProps) {
                   <span className="text-xs font-bold uppercase tracking-widest">Add to Google Wallet</span>
                 </button>
                 <button 
-                  onClick={() => setIsOrdered(false)}
-                  className="w-full py-2 text-[10px] uppercase tracking-widest opacity-50 hover:opacity-100 transition-opacity"
+                  onClick={handleCancel}
+                  className="w-full py-2 text-[10px] uppercase tracking-widest opacity-50 hover:opacity-100 transition-opacity text-red-500"
                 >
-                  Cancel Order
+                  Remove from Cart
                 </button>
               </motion.div>
             )}

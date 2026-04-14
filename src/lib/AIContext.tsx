@@ -180,7 +180,9 @@ export function AIProvider({ children }: { children: ReactNode }) {
         - Selected Podcast: ${selectedPodcast || 'None'}
         - Selected Work: ${selectedWork || 'None'}
         - Cart Items: ${cartText}
-        - Cart Total: $${cartTotal}
+        - Cart Total (Products/Memberships/Events): $${cartTotal}
+        - Booking Total (Services): $${totalPrice}
+        - Final Checkout Total: $${cartTotal + totalPrice}
         - Current Page: ${location.pathname}
       `;
 
@@ -482,12 +484,45 @@ export function AIProvider({ children }: { children: ReactNode }) {
     }
   }, [selectedWork, isAIActive]);
 
+  const prevServicesRef = useRef<string[]>([]);
+
   useEffect(() => {
-    if (isAIActive && bookingState.selectedServices.length > 0) {
-      const lastService = bookingState.selectedServices[bookingState.selectedServices.length - 1].title;
-      sendMessage(`Service: ${lastService}`, true);
+    if (isAIActive) {
+      const currentServices = bookingState.selectedServices.map(s => s.title);
+      const prevServices = prevServicesRef.current;
+      
+      const added = currentServices.filter(s => !prevServices.includes(s));
+      const removed = prevServices.filter(s => !currentServices.includes(s));
+      
+      if (added.length > 0) {
+        sendMessage(`Added Service: ${added[0]}`, true);
+      } else if (removed.length > 0) {
+        sendMessage(`Removed Service: ${removed[0]}`, true);
+      }
+      
+      prevServicesRef.current = currentServices;
     }
-  }, [bookingState.selectedServices.length, isAIActive]);
+  }, [bookingState.selectedServices, isAIActive]);
+
+  const prevCartItemsRef = useRef<any[]>([]);
+
+  useEffect(() => {
+    if (isAIActive) {
+      const currentItems = cartItems;
+      const prevItems = prevCartItemsRef.current;
+      
+      const added = currentItems.filter(item => !prevItems.some(p => p.id === item.id));
+      const removed = prevItems.filter(item => !currentItems.some(c => c.id === item.id));
+      
+      if (added.length > 0) {
+        sendMessage(`Added to Cart: ${added[0].name}`, true);
+      } else if (removed.length > 0) {
+        sendMessage(`Removed from Cart: ${removed[0].name}`, true);
+      }
+      
+      prevCartItemsRef.current = currentItems;
+    }
+  }, [cartItems, isAIActive]);
 
   useEffect(() => {
     if (isAIActive && bookingState.locationType) {
