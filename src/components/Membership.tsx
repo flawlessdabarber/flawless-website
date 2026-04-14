@@ -96,15 +96,15 @@ export default function Membership() {
         {/* Selectors */}
         <div className="flex flex-col md:flex-row items-center justify-center gap-12 glass p-8 rounded-3xl border-white/5 max-w-4xl mx-auto">
           <div className="flex flex-col items-center gap-4">
-            <span className="text-[10px] uppercase tracking-widest opacity-50 font-bold">Select Service</span>
+            <span className="text-xl font-bold uppercase tracking-tighter text-white">Select Service</span>
             <div className="flex gap-2">
               {(['cut', 'style', 'urban'] as ServiceType[]).map((type) => (
                 <button
                   key={type}
                   onClick={() => setServiceType(type)}
                   className={cn(
-                    "px-6 py-3 rounded-xl border transition-all uppercase text-[10px] font-bold tracking-widest",
-                    serviceType === type ? "bg-brand-green text-black border-brand-green shadow-[0_0_20px_rgba(0,255,0,0.2)]" : "border-white/10 hover:border-white/30 text-white/60"
+                    "px-6 py-3 rounded-xl border-2 transition-all uppercase text-[10px] font-bold tracking-widest",
+                    serviceType === type ? "bg-brand-green text-black border-brand-green shadow-[0_0_20px_rgba(0,255,0,0.2)]" : "border-white/30 hover:border-white/60 text-white/80"
                   )}
                 >
                   {type}s
@@ -116,15 +116,15 @@ export default function Membership() {
           <div className="hidden md:block w-px h-16 bg-white/10" />
 
           <div className="flex flex-col items-center gap-4">
-            <span className="text-[10px] uppercase tracking-widest opacity-50 font-bold">Hair Routine</span>
+            <span className="text-xl font-bold uppercase tracking-tighter text-white">Hair Routine</span>
             <div className="flex gap-3">
               {[1, 2, 3, 4].map((r) => (
                 <button
                   key={r}
                   onClick={() => setRoutine(r)}
                   className={cn(
-                    "w-12 h-12 rounded-xl border transition-all flex items-center justify-center font-bold text-sm",
-                    routine === r ? "bg-brand-green text-black border-brand-green shadow-[0_0_20px_rgba(0,255,0,0.2)]" : "border-white/10 hover:border-white/30 text-white/60"
+                    "w-12 h-12 rounded-xl border-2 transition-all flex items-center justify-center font-bold text-sm",
+                    routine === r ? "bg-brand-green text-black border-brand-green shadow-[0_0_20px_rgba(0,255,0,0.2)]" : "border-white/30 hover:border-white/60 text-white/80"
                   )}
                 >
                   {r}x
@@ -201,32 +201,32 @@ export default function Membership() {
                     )}
                   >
                     <div className={cn(
-                      "glass p-8 rounded-3xl flex flex-col border-white/5 transition-all bg-brand-gray/10 backdrop-blur-xl shadow-2xl shadow-black/50 relative overflow-hidden group w-full h-full",
-                      isRestricted ? "border-red-500/30 ring-2 ring-red-500/30 ring-offset-4 ring-offset-black" : (isCenter ? "border-brand-green bg-brand-green/5 ring-2 ring-brand-green ring-offset-4 ring-offset-black" : "hover:border-brand-green/30")
+                      "glass p-8 rounded-[40px] flex flex-col border-white/5 transition-all bg-gradient-to-b from-brand-green to-black backdrop-blur-xl shadow-2xl shadow-black/50 relative overflow-hidden group w-full h-full",
+                      isRestricted ? "border-red-500/30 ring-2 ring-red-500/30 ring-offset-4 ring-offset-black" : (isCenter ? "border-white/10" : "hover:border-brand-green/30")
                     )}>
                       {isRestricted && (
                         <div className="absolute inset-0 bg-red-950/60 z-10 pointer-events-none" />
                       )}
-                      <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity">
+                      <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity text-black">
                         <tier.icon size={80} />
                       </div>
                       
-                      <div className="w-12 h-12 bg-brand-green/10 rounded-2xl flex items-center justify-center mb-6">
-                        <tier.icon className="text-brand-green" />
+                      <div className="w-12 h-12 bg-brand-green/10 rounded-2xl flex items-center justify-center mb-6 relative z-10">
+                        <tier.icon className="text-black" />
                       </div>
                       
-                      <h3 className="text-2xl font-bold uppercase mb-2">{tier.name}</h3>
-                      <p className="text-white/40 text-xs mb-6 h-8">{tier.description}</p>
+                      <h3 className="text-2xl font-bold uppercase mb-2 text-white relative z-10">{tier.name}</h3>
+                      <p className="text-white/40 text-xs mb-6 h-8 relative z-10">{tier.description}</p>
                       
-                      <div className="flex items-baseline gap-1 mb-8">
-                        <span className="text-4xl font-bold text-brand-green">${price.toLocaleString()}</span>
+                      <div className="flex items-baseline gap-1 mb-8 relative z-10">
+                        <span className="text-4xl font-bold text-brand-green">${price >= 1000 ? `${price / 1000}k` : price}</span>
                         <span className="text-white/40 text-sm">/mo</span>
                       </div>
                       
-                      <ul className="space-y-4 mb-8 flex-1">
+                      <ul className="space-y-4 mb-8 flex-1 relative z-10">
                         {tier.features.map((feature, j) => (
                           <li key={j} className="flex items-start gap-3 text-sm text-white/70">
-                            <Check className="text-brand-green shrink-0" size={16} />
+                            <Check className="text-black shrink-0" size={16} />
                             {feature}
                           </li>
                         ))}
@@ -234,10 +234,10 @@ export default function Membership() {
                       
                       <div 
                         className={cn(
-                          "w-full py-4 transition-all text-[10px] font-bold uppercase tracking-widest rounded-xl border text-center relative z-20",
+                          "w-full py-4 transition-all text-2xl font-bold uppercase text-center relative z-20 cursor-pointer hover:scale-105",
                           isRestricted 
-                            ? "bg-red-500/10 text-red-500 border-red-500/30" 
-                            : "bg-white/5 hover:bg-brand-green hover:text-black border-white/10"
+                            ? "text-red-500" 
+                            : "text-white hover:text-brand-green"
                         )}
                       >
                         {isRestricted ? 'Not Available for Urban' : 'Select Plan'}

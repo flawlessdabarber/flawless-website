@@ -109,8 +109,7 @@ function TicketCard({ event }: TicketCardProps) {
           whileHover={{ rotateY: -5, rotateX: 5, y: -10 }}
           className={cn(
             "relative w-full aspect-[3/4] rounded-[40px] overflow-hidden shadow-2xl transition-all duration-500",
-            "bg-gradient-to-br",
-            event.color
+            "bg-gradient-to-b from-brand-green to-white"
           )}
         >
           {/* Top Section */}

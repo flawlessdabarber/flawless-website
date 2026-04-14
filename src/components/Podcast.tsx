@@ -107,7 +107,7 @@ export default function Podcast() {
             </div>
           </motion.div>
 
-          <div className="flex justify-center lg:justify-end">
+          <div className="flex justify-center">
             <motion.div
               className="w-full max-w-[340px] relative perspective-[1000px] group"
             >
@@ -116,23 +116,22 @@ export default function Podcast() {
                 whileHover={{ rotateY: -5, rotateX: 5, y: -10 }}
                 className={cn(
                   "relative w-full aspect-[3/4] rounded-[40px] overflow-hidden shadow-2xl transition-all duration-500",
-                  "bg-gradient-to-br from-brand-green to-emerald-600"
+                  "bg-gradient-to-b from-brand-green to-white"
                 )}
               >
                 {/* Top Section */}
                 <div className="p-8 flex flex-col items-center text-center h-full">
-                  <div className="w-20 h-20 rounded-full bg-white/20 backdrop-blur-md p-4 mb-6 shadow-lg flex items-center justify-center text-black">
-                    <Play size={32} fill="currentColor" className="ml-1" />
-                  </div>
                   
-                  <span className="text-[10px] font-mono uppercase tracking-[0.3em] text-black/60 mb-2 font-bold">
-                    Latest Episode
-                  </span>
-                  <h3 className="text-3xl font-black uppercase tracking-tighter text-black leading-none mb-2">
-                    Building a Grooming Empire
-                  </h3>
+                  <div className="flex-1 flex flex-col justify-center items-center w-full pb-4">
+                    <span className="text-[10px] font-mono uppercase tracking-[0.3em] text-black/60 mb-2 font-bold">
+                      Latest Episode
+                    </span>
+                    <h3 className="text-3xl font-black uppercase tracking-tighter text-black leading-none mb-2">
+                      Building a Grooming Empire
+                    </h3>
+                  </div>
 
-                  <div className="flex flex-col gap-4 w-full mt-auto mb-12">
+                  <div className="flex flex-col gap-4 w-full mb-12">
                     <div className="flex items-center justify-center gap-2 text-black/80 font-bold text-sm">
                       <Calendar size={16} />
                       Episode 42
@@ -149,9 +148,12 @@ export default function Podcast() {
                   <div className="absolute bottom-[25%] -right-3 w-6 h-6 bg-[#0a0a0a] rounded-full" />
 
                   {/* Bottom Section */}
-                  <div className="absolute bottom-0 left-0 right-0 p-6 flex flex-col items-center">
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-black/40 mb-1">Guest's Name</p>
-                    <p className="text-xl font-black text-black uppercase cursor-pointer hover:scale-105 transition-transform">Watch Now</p>
+                  <div className="absolute bottom-0 left-0 right-0 h-[25%] flex flex-col items-center justify-center">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-black/60 mb-1">Guest's Name</p>
+                    <div className="flex items-center gap-2 text-xl font-black text-black uppercase cursor-pointer hover:scale-105 transition-transform">
+                      <span>Watch Now</span>
+                      <Play size={20} fill="currentColor" />
+                    </div>
                   </div>
                 </div>
               </motion.div>
