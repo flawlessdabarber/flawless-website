@@ -358,6 +358,10 @@ export default function Services() {
         </AnimatePresence>
 
         {/* Services Row 1 */}
+        <div className="flex items-center justify-center gap-2 -mb-2 mt-[72px] relative z-10 pointer-events-none">
+          <Scissors className="text-brand-green" size={20} />
+          <h3 className="text-xl font-bold uppercase tracking-tighter">Select Service</h3>
+        </div>
         <div className="relative w-full max-w-5xl mx-auto flex flex-col items-center justify-center mb-12">
           <motion.div 
             drag="x"
@@ -500,6 +504,10 @@ export default function Services() {
         </div>
 
         {/* Services Row 2 */}
+        <div className="flex items-center justify-center gap-2 -mb-2 mt-[72px] relative z-10 pointer-events-none">
+          <Sparkles className="text-brand-green" size={20} />
+          <h3 className="text-xl font-bold uppercase tracking-tighter">Select Extra</h3>
+        </div>
         <div className="relative w-full max-w-5xl mx-auto flex flex-col items-center justify-center mb-16">
           <motion.div 
             drag="x"

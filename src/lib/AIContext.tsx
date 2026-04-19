@@ -270,12 +270,16 @@ export function AIProvider({ children }: { children: ReactNode }) {
       let aiText = "";
       let functionCall = null;
       let modelParts: any[] = [];
+      let streamFinished = false;
 
       for await (const chunk of responseStream) {
+        if (streamFinished) continue;
+        
         if (chunk.functionCalls && chunk.functionCalls.length > 0) {
           functionCall = chunk.functionCalls[0];
           modelParts = chunk.candidates?.[0]?.content?.parts || [];
-          break;
+          streamFinished = true;
+          continue;
         }
         if (chunk.text) {
           aiText += chunk.text;
@@ -400,11 +404,9 @@ export function AIProvider({ children }: { children: ReactNode }) {
           for await (const chunk of followUpStream) {
             if (chunk.text) {
               aiText += chunk.text;
-              setMessages(prev => {
-                const newMessages = [...prev];
-                newMessages[newMessages.length - 1].text = aiText;
-                return newMessages;
-              });
+              setMessages(prev => prev.map(msg => 
+                msg.id === messageId ? { ...msg, text: aiText } : msg
+              ));
             }
           }
         }
@@ -439,8 +441,8 @@ export function AIProvider({ children }: { children: ReactNode }) {
       while (retries > 0) {
         try {
           response = await ai.models.generateContent({
-            model: "gemini-2.5-flash-preview-tts",
-            contents: cleanText.substring(0, 2000),
+            model: "gemini-3.1-flash-tts-preview",
+            contents: [{ parts: [{ text: cleanText.substring(0, 2000) }] }],
             config: {
               responseModalities: [Modality.AUDIO],
               speechConfig: {
