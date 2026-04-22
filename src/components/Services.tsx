@@ -189,6 +189,30 @@ export default function Services() {
 
   const timeSlots = generateTimeSlots();
 
+  React.useEffect(() => {
+    if (scrollRef.current) {
+      const targetDateStr = state.date || todayStr;
+      const index = dates.findIndex(date => {
+        const dStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+        return dStr === targetDateStr;
+      });
+      
+      if (index !== -1) {
+        const cardWidth = 96; // w-24
+        const gap = 16; // gap-4
+        const ref = scrollRef.current;
+        setTimeout(() => {
+          if (ref) {
+            // Because of the calc(50% - 48px) padding on the flex container, 
+            // scrollLeft of (index * 112) perfectly centers the item.
+            const scrollPos = index * (cardWidth + gap);
+            ref.scrollTo({ left: scrollPos, behavior: 'smooth' });
+          }
+        }, 50);
+      }
+    }
+  }, [state.selectedMonth, state.date, dates, todayStr]);
+
   const isOvertimeSlot = (time: string) => {
     const hour = parseInt(time.split(':')[0]);
     const isPM = time.includes('PM');
@@ -201,7 +225,7 @@ export default function Services() {
       <div className="container mx-auto px-6">
         <div className="flex flex-col md:flex-row justify-between items-center md:items-end mb-16 gap-8">
           <div className="text-center md:text-left">
-            <span className="text-brand-green font-mono text-xs tracking-widest uppercase mb-4 block">Our Expertise</span>
+            <span className="text-brand-green font-mono text-xs tracking-widest uppercase mb-4 block">6 Step Process</span>
             <h2 className="text-5xl md:text-7xl font-bold uppercase tracking-tighter">Book a <br /> Reservation</h2>
           </div>
           <div className="flex flex-col md:flex-row gap-4 md:gap-8 w-full md:w-auto">
@@ -359,7 +383,7 @@ export default function Services() {
 
         {/* Services Row 1 */}
         <div className="flex items-center justify-center gap-2 -mb-2 mt-[72px] relative z-10 pointer-events-none">
-          <Scissors className="text-brand-green" size={20} />
+          <span className="flex items-center justify-center w-8 h-8 rounded-full border-2 border-brand-green text-brand-green text-lg font-bold">1</span>
           <h3 className="text-xl font-bold uppercase tracking-tighter">Select Service</h3>
         </div>
         <div className="relative w-full max-w-5xl mx-auto flex flex-col items-center justify-center mb-12">
@@ -505,7 +529,7 @@ export default function Services() {
 
         {/* Services Row 2 */}
         <div className="flex items-center justify-center gap-2 -mb-2 mt-[72px] relative z-10 pointer-events-none">
-          <Sparkles className="text-brand-green" size={20} />
+          <span className="flex items-center justify-center w-8 h-8 rounded-full border-2 border-brand-green text-brand-green text-lg font-bold">2</span>
           <h3 className="text-xl font-bold uppercase tracking-tighter">Select Extra</h3>
         </div>
         <div className="relative w-full max-w-5xl mx-auto flex flex-col items-center justify-center mb-16">
@@ -667,10 +691,10 @@ export default function Services() {
           {/* Month Selector */}
           <div>
             <div className="flex items-center justify-center gap-2 mb-6">
-              <CalendarIcon className="text-brand-green" size={20} />
+              <span className="flex items-center justify-center w-8 h-8 rounded-full border-2 border-brand-green text-brand-green text-lg font-bold">3</span>
               <h3 className="text-xl font-bold uppercase tracking-tighter">Select Month</h3>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="w-full max-w-3xl mx-auto flex items-center gap-4">
               <button 
                 onClick={() => setMonth(Math.max(currentMonth, state.selectedMonth - 1))}
                 disabled={state.selectedMonth <= currentMonth}
@@ -693,20 +717,21 @@ export default function Services() {
           {/* Date Selector */}
           <div>
             <div className="flex items-center justify-center gap-2 mb-6">
-              <CalendarIcon className="text-brand-green" size={20} />
+              <span className="flex items-center justify-center w-8 h-8 rounded-full border-2 border-brand-green text-brand-green text-lg font-bold">4</span>
               <h3 className="text-xl font-bold uppercase tracking-tighter">Select Date</h3>
             </div>
-            <div 
-              ref={scrollRef}
-              onMouseDown={handleMouseDown}
-              onMouseLeave={handleMouseLeave}
-              onMouseUp={handleMouseUp}
-              onMouseMove={handleMouseMove}
-              className={cn(
-                "flex gap-4 overflow-x-auto pb-4 no-scrollbar",
-                isDragging ? "cursor-grabbing" : "cursor-grab"
-              )}
-            >
+            <div className="w-full max-w-3xl mx-auto">
+              <div 
+                ref={scrollRef}
+                onMouseDown={handleMouseDown}
+                onMouseLeave={handleMouseLeave}
+                onMouseUp={handleMouseUp}
+                onMouseMove={handleMouseMove}
+                className={cn(
+                  "flex gap-4 overflow-x-auto pb-4 no-scrollbar px-[calc(50%-48px)]",
+                  isDragging ? "cursor-grabbing" : "cursor-grab"
+                )}
+              >
               {dates.map((date, i) => {
                 const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
                 const isSelected = state.date === dateStr;
@@ -801,16 +826,17 @@ export default function Services() {
                   </motion.button>
                 );
               })}
+              </div>
             </div>
           </div>
 
           {/* Time Selector */}
           <div>
             <div className="flex items-center justify-center gap-2 mb-6">
-              <Clock className="text-brand-green" size={20} />
+              <span className="flex items-center justify-center w-8 h-8 rounded-full border-2 border-brand-green text-brand-green text-lg font-bold">5</span>
               <h3 className="text-xl font-bold uppercase tracking-tighter">Select Time</h3>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-6 gap-4">
+            <div className="w-full max-w-3xl mx-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
               {timeSlots.map((time, i) => {
                 const isSelected = state.time === time;
                 const overtime = isOvertimeSlot(time);
@@ -862,7 +888,7 @@ export default function Services() {
           {/* Barber Selector */}
           <div className="mt-12">
             <div className="flex items-center justify-center gap-2 mb-6">
-              <User className="text-brand-green" size={20} />
+              <span className="flex items-center justify-center w-8 h-8 rounded-full border-2 border-brand-green text-brand-green text-lg font-bold">6</span>
               <h3 className="text-xl font-bold uppercase tracking-tighter">Select Barber</h3>
             </div>
             
