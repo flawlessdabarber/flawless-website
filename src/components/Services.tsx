@@ -28,7 +28,7 @@ const barbers = [
 ];
 
 export default function Services() {
-  const { state, toggleService, setLocationType, setClientType, setAgeGroup, setDate, setTime, setBarber, setAddress, setMonth, totalPrice, isOvertime, isSunday, isDayOffFee, otFee } = useBooking();
+  const { state, toggleService, setLocationType, setClientType, setAgeGroup, setDate, setTime, setBarber, setAddress, setMonth, updateClientDetails, totalPrice, isOvertime, isSunday, isDayOffFee, otFee } = useBooking();
   const { addItem } = useCart();
   
   const [barberIndex, setBarberIndex] = React.useState(0);
@@ -360,22 +360,107 @@ export default function Services() {
         </div>
 
         <AnimatePresence>
-          {state.locationType === 'mobile' && (
+          {state.clientType === 'walk-in' && (
             <motion.div
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: 'auto', opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
-              className="mb-12 overflow-hidden"
+              className="mb-12 overflow-hidden w-full max-w-3xl mx-auto"
             >
-              <div className="glass p-8 rounded-3xl">
-                <label className="block text-[10px] uppercase tracking-widest opacity-50 mb-4">Mobile Service Address</label>
-                <input 
-                  type="text" 
-                  value={state.address}
-                  onChange={(e) => setAddress(e.target.value)}
-                  placeholder="Enter your full address for the mobile visit..."
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-6 py-4 focus:outline-none focus:border-brand-green transition-colors"
-                />
+              <div className="glass p-6 md:p-8 rounded-3xl w-full flex flex-col items-center">
+                <label className="block text-brand-green font-bold uppercase tracking-widest mb-6 text-center">Registration Details</label>
+                
+                <div className="w-full flex flex-col gap-4">
+                  <div className="flex flex-col md:flex-row gap-4 w-full">
+                    <input 
+                      type="text" 
+                      placeholder="First Name" 
+                      value={state.clientDetails.firstName}
+                      onChange={(e) => updateClientDetails({ firstName: e.target.value })}
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-brand-green transition-colors"
+                    />
+                    <input 
+                      type="text" 
+                      placeholder="Last Name" 
+                      value={state.clientDetails.lastName}
+                      onChange={(e) => updateClientDetails({ lastName: e.target.value })}
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-brand-green transition-colors"
+                    />
+                  </div>
+                  
+                  <div className="flex flex-col md:flex-row gap-4 w-full">
+                    <input 
+                      type="email" 
+                      placeholder="Email Address" 
+                      value={state.clientDetails.email}
+                      onChange={(e) => updateClientDetails({ email: e.target.value })}
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-brand-green transition-colors"
+                    />
+                    <input 
+                      type="tel" 
+                      placeholder="Phone Number" 
+                      value={state.clientDetails.phone}
+                      onChange={(e) => updateClientDetails({ phone: e.target.value })}
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-brand-green transition-colors"
+                    />
+                  </div>
+
+                  {state.locationType === 'mobile' && (
+                    <motion.div 
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      className="flex flex-col gap-4 w-full pt-4 border-t border-white/10 mt-2"
+                    >
+                      <label className="text-brand-green font-bold uppercase tracking-widest text-xs">Mobile Visit Address</label>
+                      <input 
+                        type="text" 
+                        placeholder="Street Address" 
+                        value={state.clientDetails.address}
+                        onChange={(e) => updateClientDetails({ address: e.target.value })}
+                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-brand-green transition-colors"
+                      />
+                      <div className="flex flex-col md:flex-row gap-4 w-full">
+                        <input 
+                          type="text" 
+                          placeholder="City" 
+                          value={state.clientDetails.city}
+                          onChange={(e) => updateClientDetails({ city: e.target.value })}
+                          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-brand-green transition-colors flex-[2]"
+                        />
+                        <input 
+                          type="text" 
+                          placeholder="State (e.g., NY)" 
+                          value={state.clientDetails.state}
+                          onChange={(e) => updateClientDetails({ state: e.target.value })}
+                          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-brand-green transition-colors flex-1"
+                        />
+                        <input 
+                          type="text" 
+                          placeholder="Zip Code" 
+                          value={state.clientDetails.zipCode}
+                          onChange={(e) => updateClientDetails({ zipCode: e.target.value })}
+                          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-brand-green transition-colors flex-1"
+                        />
+                      </div>
+                    </motion.div>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {state.clientType === 'member' && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="mb-12 overflow-hidden w-full max-w-sm mx-auto"
+            >
+              <div className="glass p-6 rounded-3xl w-full flex flex-col items-center">
+                <label className="block text-brand-green font-bold uppercase tracking-widest mb-4 text-center text-xs">Generated Member ID</label>
+                <div className="bg-white/10 border border-brand-green/30 px-6 py-3 rounded-xl">
+                  <span className="font-mono text-2xl font-bold tracking-widest text-brand-green shadow-brand-green">{state.memberId}</span>
+                </div>
               </div>
             </motion.div>
           )}

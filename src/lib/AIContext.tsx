@@ -50,7 +50,7 @@ interface AIContextType {
 const AIContext = createContext<AIContextType | undefined>(undefined);
 
 export function AIProvider({ children }: { children: ReactNode }) {
-  const { state: bookingState, totalPrice, toggleService, setDate, setTime, setBarber, setLocationType, setClientType, setAddress } = useBooking();
+  const { state: bookingState, totalPrice, toggleService, setDate, setTime, setBarber, setLocationType, setClientType, setAddress, updateClientDetails } = useBooking();
   const { items: cartItems, totalPrice: cartTotal, addItem, removeItem } = useCart();
   const navigate = useNavigate();
   const location = useLocation();
@@ -175,6 +175,15 @@ export function AIProvider({ children }: { children: ReactNode }) {
         - Barber: ${bookingState.barber || 'Not selected'}
         - Reserved Times for Selected Date: ${reservedTimesText}
         - Mobile Address: ${bookingState.address || 'Not provided'}
+        - Client Registration Details (Go High Level Sync readiness):
+          - First Name: ${bookingState.clientDetails.firstName}
+          - Last Name: ${bookingState.clientDetails.lastName}
+          - Email: ${bookingState.clientDetails.email}
+          - Phone: ${bookingState.clientDetails.phone}
+          - Address (Mobile): ${bookingState.clientDetails.address}
+          - City: ${bookingState.clientDetails.city}
+          - State: ${bookingState.clientDetails.state}
+          - Zip Code: ${bookingState.clientDetails.zipCode}
         - Selected Event: ${selectedEvent || 'None'}
         - Selected Product: ${selectedProduct || 'None'}
         - Selected Membership: ${selectedMembership || 'None'}
@@ -225,6 +234,7 @@ export function AIProvider({ children }: { children: ReactNode }) {
         - If the user asks to add or remove a product/membership/event to/from the cart, use action="toggle_cart_item" and target="item_id" (e.g., 'pomade-1000', 'membership-kids-1-cut', 'event-1'). For adding, include additional_info as JSON with name, price, category.
         - If the user asks to select or deselect a service, use action="toggle_service" and target="service_id" (e.g., 'hair', 'hairstyle', 'urban', 'skin', 'sessions', 'cleanup').
         - If the user asks to set a date, time, barber, location type, client type, or address, use action="update_booking" and target="booking_field" (e.g., 'date', 'time', 'barber', 'locationType', 'clientType', 'address') with additional_info containing the value (e.g., '2026-04-15', '10:00 AM', 'flawless', 'mobile', 'member', '123 Main St').
+        - To update registration details (Go High Level sync), use action="update_booking" and target="clientDetails" with additional_info as a JSON string: {"firstName": "...", "lastName": "...", "email": "...", "phone": "...", "address": "...", "city": "...", "state": "...", "zipCode": "..."}
         - If the user asks to select an option, scroll a slider, or click a button, use action="click_element" and target="css_selector" (e.g., "button:contains('Hair')", ".next-slide-btn").
         - If the user asks to scroll a slider, use action="dispatch_event" and target="ai_action" with additional_info as a JSON string describing the action.`,
         tools: [{
@@ -352,6 +362,14 @@ export function AIProvider({ children }: { children: ReactNode }) {
               else if (args.target === 'locationType') setLocationType(value as any);
               else if (args.target === 'clientType') setClientType(value as any);
               else if (args.target === 'address') setAddress(value);
+              else if (args.target === 'clientDetails') {
+                try {
+                  const details = JSON.parse(value);
+                  updateClientDetails(details);
+                } catch (e) {
+                  console.error("Invalid client details JSON", e);
+                }
+              }
             } catch (e) {
               console.error("Failed to update booking", e);
             }

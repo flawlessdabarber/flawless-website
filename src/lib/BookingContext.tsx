@@ -11,6 +11,17 @@ export interface Service {
   price: number;
 }
 
+interface ClientDetails {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  zipCode?: string;
+}
+
 interface BookingState {
   selectedServices: Service[];
   locationType: LocationType;
@@ -22,6 +33,7 @@ interface BookingState {
   barber: string | null;
   address: string;
   selectedMonth: number; // 0-11
+  clientDetails: ClientDetails;
 }
 
 interface BookingContextType {
@@ -35,6 +47,7 @@ interface BookingContextType {
   setBarber: (barber: string) => void;
   setAddress: (address: string) => void;
   setMonth: (month: number) => void;
+  updateClientDetails: (details: Partial<ClientDetails>) => void;
   totalPrice: number;
   isOvertime: boolean;
   isSunday: boolean;
@@ -95,6 +108,16 @@ export function BookingProvider({ children }: { children: ReactNode }) {
     barber: null,
     address: '',
     selectedMonth: new Date().getMonth(),
+    clientDetails: {
+      firstName: '',
+      lastName: '',
+      email: '',
+      phone: '',
+      address: '',
+      city: '',
+      state: '',
+      zipCode: ''
+    }
   });
 
   const toggleService = (service: Service) => {
@@ -135,6 +158,7 @@ export function BookingProvider({ children }: { children: ReactNode }) {
   const setBarber = (barber: string) => setState(prev => ({ ...prev, barber }));
   const setAddress = (address: string) => setState(prev => ({ ...prev, address }));
   const setMonth = (selectedMonth: number) => setState(prev => ({ ...prev, selectedMonth }));
+  const updateClientDetails = (details: Partial<ClientDetails>) => setState(prev => ({ ...prev, clientDetails: { ...prev.clientDetails, ...details } }));
 
   const checkSunday = (dateStr: string | null) => {
     if (!dateStr) return false;
@@ -212,7 +236,7 @@ export function BookingProvider({ children }: { children: ReactNode }) {
   const totalPrice = calculatedPrice;
 
   return (
-    <BookingContext.Provider value={{ state, toggleService, setLocationType, setClientType, setAgeGroup, setDate, setTime, setBarber, setAddress, setMonth, totalPrice, isOvertime, isSunday, isDayOffFee, otFee }}>
+    <BookingContext.Provider value={{ state, toggleService, setLocationType, setClientType, setAgeGroup, setDate, setTime, setBarber, setAddress, setMonth, updateClientDetails, totalPrice, isOvertime, isSunday, isDayOffFee, otFee }}>
       {children}
     </BookingContext.Provider>
   );

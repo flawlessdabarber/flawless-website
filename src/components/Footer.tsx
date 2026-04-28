@@ -10,7 +10,7 @@ export default function Footer() {
       <div className="container mx-auto px-6">
         <FooterMap />
         
-        <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-12 mb-24">
+        <div className="grid lg:grid-cols-5 gap-12 mb-24">
           <div className="lg:col-span-2">
             <Link to="/" className="flex items-center gap-2 mb-8">
               <img src={logo} alt="Logo" style={{ height: '100px' }} />
@@ -26,32 +26,34 @@ export default function Footer() {
             </div>
           </div>
 
-          <div>
-            <h4 className="text-[10px] uppercase tracking-[0.3em] font-bold text-brand-green mb-8">Navigation</h4>
-            <ul className="space-y-4 text-sm uppercase tracking-widest font-bold">
-              <li><Link to="/services" className="hover:text-brand-green transition-colors">Services</Link></li>
-              <li><Link to="/membership" className="hover:text-brand-green transition-colors">Membership</Link></li>
-              <li><Link to="/merchandise" className="hover:text-brand-green transition-colors">Shop</Link></li>
-              <li><Link to="/podcast" className="hover:text-brand-green transition-colors">FDB Live</Link></li>
-            </ul>
-          </div>
+          <div className="lg:col-span-3 grid grid-cols-1 md:grid-cols-3 gap-12">
+            <div>
+              <h4 className="text-[10px] uppercase tracking-[0.3em] font-bold text-brand-green mb-8">Navigation</h4>
+              <ul className="space-y-4 text-sm uppercase tracking-widest font-bold">
+                <li><Link to="/services" className="hover:text-brand-green transition-colors">Services</Link></li>
+                <li><Link to="/membership" className="hover:text-brand-green transition-colors">Membership</Link></li>
+                <li><Link to="/merchandise" className="hover:text-brand-green transition-colors">Shop</Link></li>
+                <li><Link to="/podcast" className="hover:text-brand-green transition-colors">FDB Live</Link></li>
+              </ul>
+            </div>
 
-          <div>
-            <h4 className="text-[10px] uppercase tracking-[0.3em] font-bold text-brand-green mb-8">Legal</h4>
-            <ul className="space-y-4 text-sm uppercase tracking-widest font-bold">
-              <li><Link to="/legal" className="hover:text-brand-green transition-colors">Privacy Policy</Link></li>
-              <li><Link to="/legal" className="hover:text-brand-green transition-colors">Terms of Service</Link></li>
-              <li><Link to="/legal" className="hover:text-brand-green transition-colors">Refund Policy</Link></li>
-            </ul>
-          </div>
+            <div>
+              <h4 className="text-[10px] uppercase tracking-[0.3em] font-bold text-brand-green mb-8">Legal</h4>
+              <ul className="space-y-4 text-sm uppercase tracking-widest font-bold">
+                <li><Link to="/legal" className="hover:text-brand-green transition-colors">Privacy Policy</Link></li>
+                <li><Link to="/legal" className="hover:text-brand-green transition-colors">Terms of Service</Link></li>
+                <li><Link to="/legal" className="hover:text-brand-green transition-colors">Refund Policy</Link></li>
+              </ul>
+            </div>
 
-          <div>
-            <h4 className="text-[10px] uppercase tracking-[0.3em] font-bold text-brand-green mb-8">Access</h4>
-            <ul className="space-y-4 text-sm uppercase tracking-widest font-bold">
-              <li><Link to="/admin" className="hover:text-brand-green transition-colors">Admin</Link></li>
-              <li><Link to="/barber" className="hover:text-brand-green transition-colors">Barber</Link></li>
-              <li><Link to="/member" className="hover:text-brand-green transition-colors">Member</Link></li>
-            </ul>
+            <div>
+              <h4 className="text-[10px] uppercase tracking-[0.3em] font-bold text-brand-green mb-8">Access</h4>
+              <ul className="space-y-4 text-sm uppercase tracking-widest font-bold">
+                <li><Link to="/admin" className="hover:text-brand-green transition-colors">Admin</Link></li>
+                <li><Link to="/barber" className="hover:text-brand-green transition-colors">Barber</Link></li>
+                <li><Link to="/member" className="hover:text-brand-green transition-colors">Member</Link></li>
+              </ul>
+            </div>
           </div>
         </div>
 
