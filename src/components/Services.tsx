@@ -425,21 +425,21 @@ export default function Services() {
                           placeholder="City" 
                           value={state.clientDetails.city}
                           onChange={(e) => updateClientDetails({ city: e.target.value })}
-                          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-brand-green transition-colors flex-[2]"
+                          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-brand-green transition-colors md:flex-[2]"
                         />
                         <input 
                           type="text" 
                           placeholder="State (e.g., NY)" 
                           value={state.clientDetails.state}
                           onChange={(e) => updateClientDetails({ state: e.target.value })}
-                          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-brand-green transition-colors flex-1"
+                          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-brand-green transition-colors md:flex-1"
                         />
                         <input 
                           type="text" 
                           placeholder="Zip Code" 
                           value={state.clientDetails.zipCode}
                           onChange={(e) => updateClientDetails({ zipCode: e.target.value })}
-                          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-brand-green transition-colors flex-1"
+                          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-brand-green transition-colors md:flex-1"
                         />
                       </div>
                     </motion.div>
@@ -1109,7 +1109,7 @@ export default function Services() {
                     initial={{ opacity: 0, scale: 0.9, y: 20 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                    className="glass-dark p-6 rounded-2xl flex flex-col md:flex-row justify-between items-center gap-6 border-brand-green/30 shadow-[0_-20px_50px_rgba(0,0,0,0.5)] pointer-events-auto relative w-full"
+                    className="glass-dark p-4 md:p-6 rounded-2xl flex flex-col lg:flex-row justify-between items-center gap-6 border-brand-green/30 shadow-[0_-20px_50px_rgba(0,0,0,0.5)] pointer-events-auto relative w-full"
                   >
                     <button 
                       onClick={() => setIsSummaryVisible(false)}
@@ -1118,45 +1118,45 @@ export default function Services() {
                       <ChevronDown size={16} />
                     </button>
                     
-                    <div className="flex flex-col md:flex-row items-center gap-8 w-full md:w-auto">
+                    <div className="grid grid-cols-2 lg:flex lg:flex-row items-center gap-4 lg:gap-8 w-full lg:w-auto text-center lg:text-left">
                       <div>
                         <p className="text-[10px] uppercase tracking-widest opacity-50 mb-1">Selected Services</p>
-                        <p className="text-sm font-bold">
-                          {state.selectedServices.map(s => s.title).join(', ')}
+                        <p className="text-sm font-bold truncate px-2">
+                          {state.selectedServices.map(s => s.title).join(', ') || 'None'}
                         </p>
                       </div>
-                      <div className="hidden md:block w-px h-8 bg-white/10" />
+                      <div className="hidden lg:block w-px h-8 bg-white/10" />
                       <div>
                         <p className="text-[10px] uppercase tracking-widest opacity-50 mb-1">Location</p>
-                        <p className="text-sm font-bold uppercase">
+                        <p className="text-sm font-bold uppercase truncate px-2">
                           {state.locationType === 'in-store' ? 'In-Store' : 'Mobile Visit'}
                         </p>
                       </div>
-                      <div className="hidden md:block w-px h-8 bg-white/10" />
+                      <div className="hidden lg:block w-px h-8 bg-white/10" />
                       <div>
                         <p className="text-[10px] uppercase tracking-widest opacity-50 mb-1">Client Type</p>
-                        <p className="text-sm font-bold uppercase">
+                        <p className="text-sm font-bold uppercase truncate px-2">
                           {state.clientType === 'walk-in' ? 'Walk-in' : 'Member'}
                         </p>
                       </div>
-                      <div className="hidden md:block w-px h-8 bg-white/10" />
+                      <div className="hidden lg:block w-px h-8 bg-white/10" />
                       <div>
                         <p className="text-[10px] uppercase tracking-widest opacity-50 mb-1">Appointment</p>
-                        <p className="text-sm font-bold">
+                        <p className="text-sm font-bold truncate px-2">
                           {state.date ? new Date(state.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'Select Date'} 
                           {' @ '} 
                           {state.time || 'Select Time'}
                         </p>
                       </div>
-                      <div className="hidden md:block w-px h-8 bg-white/10" />
-                      <div>
+                      <div className="hidden lg:block w-px h-8 bg-white/10" />
+                      <div className="col-span-2 lg:col-span-1">
                         <p className="text-[10px] uppercase tracking-widest opacity-50 mb-1">Barber</p>
-                        <p className="text-sm font-bold uppercase">
+                        <p className="text-sm font-bold uppercase truncate px-2">
                           {state.barber ? barbers.find(b => b.id === state.barber)?.name : 'Any'}
                         </p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-8 w-full md:w-auto justify-between md:justify-end mt-4 md:mt-0">
+                    <div className="flex items-center gap-8 w-full lg:w-auto justify-between lg:justify-end mt-4 lg:mt-0">
                       <div className="text-right">
                         <p className="text-[10px] uppercase tracking-widest opacity-50 mb-1">
                           Total Price 
@@ -1164,12 +1164,14 @@ export default function Services() {
                           {isSunday && state.clientType === 'walk-in' && <span className="text-brand-green ml-2">(Sunday Walk-in +1x)</span>}
                           {isDayOffFee && <span className="text-brand-green ml-2">(Day Off Fee +1x)</span>}
                         </p>
-                        <p className="text-3xl font-bold text-brand-green">${totalPrice}</p>
-                        {reserveError && <p className="text-red-500 text-xs mt-1 absolute -top-6 right-8">{reserveError}</p>}
+                        <p className="text-3xl font-bold text-brand-green relative">
+                          ${totalPrice}
+                          {reserveError && <span className="text-red-500 text-xs absolute -top-5 right-0 whitespace-nowrap">{reserveError}</span>}
+                        </p>
                       </div>
                       <button 
                         onClick={handleReserve}
-                        className="px-8 md:px-12 py-4 bg-brand-green text-black font-bold uppercase tracking-widest hover:bg-white transition-all rounded-xl shadow-lg shadow-brand-green/20 whitespace-nowrap"
+                        className="px-6 sm:px-8 md:px-12 py-3 sm:py-4 bg-brand-green text-black font-bold uppercase tracking-widest hover:bg-white transition-all rounded-xl shadow-lg shadow-brand-green/20 whitespace-nowrap text-sm sm:text-base"
                       >
                         Reserve Now
                       </button>
