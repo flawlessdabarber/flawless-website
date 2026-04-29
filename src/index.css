@@ -70,7 +70,16 @@
   scrollbar-width: none;  /* Firefox */
 }
 
-/* Premium Weather Animations for Map */
+/* Attempt to override LeadConnector Chat Widget styles */
+chat-widget {
+  left: 20px !important;
+  right: auto !important;
+  bottom: 20px !important;
+  --chat-widget-primary-color: #00FF00 !important;
+  --chat-widget-bg-color: #00FF00 !important;
+  --primary-color: #00FF00 !important;
+}
+
 .rain-overlay {
   background-image: url("data:image/svg+xml,%3Csvg width='40' height='120' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 0 L10 30' stroke='%23ffffff' stroke-width='1.5' stroke-linecap='round' opacity='0.4'/%3E%3Cpath d='M40 40 L30 70' stroke='%23ffffff' stroke-width='1' stroke-linecap='round' opacity='0.2'/%3E%3C/svg%3E");
   background-size: 40px 120px;

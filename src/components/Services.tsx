@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Scissors, Sparkles, MapPin, Store, Zap, Wind, Palette, Calendar as CalendarIcon, Clock, Check, Layers, ChevronLeft, ChevronRight, ShieldCheck, Baby, User, ChevronDown, ChevronUp } from 'lucide-react';
+import { Scissors, Sparkles, MapPin, Store, Zap, Wind, Palette, Calendar as CalendarIcon, Clock, Check, Layers, ChevronLeft, ChevronRight, ShieldCheck, Baby, User, ChevronDown, ChevronUp, Send } from 'lucide-react';
 import { useBooking, Service, services } from '../lib/BookingContext';
 import { useCart } from '../lib/CartContext';
 import { cn } from '../lib/utils';
@@ -70,6 +70,88 @@ export default function Services() {
   const [scrollLeft, setScrollLeft] = React.useState(0);
   const [isSummaryVisible, setIsSummaryVisible] = React.useState(true);
   const [reserveError, setReserveError] = React.useState('');
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [submitStatus, setSubmitStatus] = React.useState<'idle' | 'success' | 'error'>('idle');
+
+  const GHL_WEBHOOK_URL = 'https://services.leadconnectorhq.com/hooks/u6qprcxp9J4VSjt6agpi/webhook-trigger/917a0eb5-4baf-4afd-aca1-76da585e2f5d';
+
+  const handleGHLSubmit = async () => {
+    // 1. Validate Services (Must have at least one)
+    if (state.selectedServices.length === 0) {
+      setReserveError('Please select at least one service.');
+      return;
+    }
+
+    // 2. Validate Scheduling
+    if (!state.date) {
+      setReserveError('Please select a date.');
+      return;
+    }
+    if (!state.time) {
+      setReserveError('Please select a time.');
+      return;
+    }
+    if (!state.barber) {
+      setReserveError('Please select a barber.');
+      return;
+    }
+
+    // 3. Validate Location
+    if (state.locationType === 'mobile' && (!state.clientDetails.address || !state.clientDetails.city || !state.clientDetails.state || !state.clientDetails.zipCode)) {
+      setReserveError('Please provide your full mobile visit address.');
+      return;
+    }
+
+    // 4. Validate Client Details for Walk-ins
+    if (state.clientType === 'walk-in') {
+      if (!state.clientDetails.firstName || !state.clientDetails.lastName || !state.clientDetails.email || !state.clientDetails.phone) {
+        setReserveError('Please complete all registration details.');
+        return;
+      }
+    }
+
+    setIsSubmitting(true);
+    setSubmitStatus('idle');
+    setReserveError('');
+
+    const payload = {
+      ...state.clientDetails,
+      locationType: state.locationType,
+      clientType: state.clientType,
+      ageGroup: state.ageGroup,
+      selectedServices: state.selectedServices.map(s => s.title),
+      totalPrice: totalPrice,
+      appointmentDate: state.date,
+      appointmentTime: state.time,
+      barber: state.barber,
+      memberId: state.memberId,
+      source: 'Website Booking Form'
+    };
+
+    try {
+      const response = await fetch(GHL_WEBHOOK_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (response.ok) {
+        setSubmitStatus('success');
+        setReserveError('');
+        // Proceed to add to cart/local state after successful webhook
+        handleReserve();
+      } else {
+        setSubmitStatus('error');
+        setReserveError('Failed to process submission. Please try again.');
+      }
+    } catch (err) {
+      console.error('GHL Submission Error:', err);
+      setSubmitStatus('error');
+      setReserveError('Network error. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const handleReserve = () => {
     if (!state.date) {
@@ -444,6 +526,27 @@ export default function Services() {
                       </div>
                     </motion.div>
                   )}
+                 
+                  {/* Submit Registration Button for Walk-ins */}
+                  {reserveError && (
+                    <p className="text-red-500 text-xs text-center mt-2 font-bold">{reserveError}</p>
+                  )}
+                  <button
+                    onClick={handleGHLSubmit}
+                    disabled={isSubmitting}
+                    className={cn(
+                      "mt-4 w-full py-4 rounded-xl font-bold uppercase tracking-widest flex items-center justify-center gap-3 transition-all",
+                      submitStatus === 'success' ? "bg-white text-brand-green" : "bg-brand-green text-black hover:bg-white"
+                    )}
+                  >
+                    {isSubmitting ? (
+                      <span className="animate-pulse">Processing...</span>
+                    ) : submitStatus === 'success' ? (
+                      <><Check size={20} /> Registered Successfully</>
+                    ) : (
+                      <><Send size={18} /> Confirm Registration</>
+                    )}
+                  </button>
                 </div>
               </div>
             </motion.div>
@@ -1170,10 +1273,11 @@ export default function Services() {
                         </p>
                       </div>
                       <button 
-                        onClick={handleReserve}
-                        className="px-6 sm:px-8 md:px-12 py-3 sm:py-4 bg-brand-green text-black font-bold uppercase tracking-widest hover:bg-white transition-all rounded-xl shadow-lg shadow-brand-green/20 whitespace-nowrap text-sm sm:text-base"
+                        onClick={handleGHLSubmit}
+                        disabled={isSubmitting}
+                        className="px-6 sm:px-8 md:px-12 py-3 sm:py-4 bg-brand-green text-black font-bold uppercase tracking-widest hover:bg-white transition-all rounded-xl shadow-lg shadow-brand-green/20 whitespace-nowrap text-sm sm:text-base flex items-center gap-2"
                       >
-                        Reserve Now
+                        {isSubmitting ? "Syncing..." : "Reserve Now"}
                       </button>
                     </div>
                   </motion.div>
